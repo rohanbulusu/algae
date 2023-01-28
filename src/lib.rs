@@ -1,5 +1,5 @@
 #![warn(rust_2018_idioms)]
 #![allow(dead_code)]
 
-mod algaeset;
-mod mapping;
+pub mod algaeset;
+pub mod mappings;

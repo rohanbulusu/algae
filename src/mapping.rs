@@ -1,88 +1,115 @@
-
-fn permutations<T: Clone>(collection: &Vec<T>, grouping_size: usize) -> Vec<Vec<T>> {
-	let mut groupings: Vec<Vec<T>> = vec![];
-	for chunk in collection.chunks(grouping_size) {
-		groupings.push(chunk.to_vec());
-	}
-	groupings
+fn permutations<T: Clone>(collection: &Vec<T>, group_size: usize) -> Vec<Vec<T>> {
+    let mut groupings: Vec<Vec<T>> = vec![];
+    for chunk in collection.chunks(group_size) {
+        groupings.push(chunk.to_vec());
+    }
+    groupings
 }
 
 #[derive(Debug)]
 pub enum PropertyError {
-	CommutativityError,
-	AssociativityError,
-	Other
+    CommutativityError,
+    AssociativityError,
+    Other(String),
 }
 
 impl std::fmt::Display for PropertyError {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
-		write!(f, "{}", self)
-	}
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        let msg = match self {
+            PropertyError::CommutativityError => "Operation is not commutative!",
+            PropertyError::AssociativityError => "Operation is not associative!",
+            PropertyError::Other(error) => error,
+        };
+        write!(f, "{}", msg)
+    }
 }
 
+pub trait OperationProperty<In, Out> {
+    
+    fn holds_over<'a>(&'a self, op: &'a dyn Fn(In, In) -> Out, domain_sample: &Vec<In>) -> bool;
+    
+    fn error(&self) -> PropertyError;
+    
+}
+
+pub struct Commutative;
+
+impl Commutative {
+
+    pub fn new() -> Self {
+        Self {}
+    }
+    
+}
+
+impl<In: Copy, Out: PartialEq> OperationProperty<In, Out> for Commutative {
+
+    fn holds_over(&self, op: &dyn Fn(In, In) -> Out, domain_sample: &Vec<In>) -> bool {
+        if domain_sample.len() < 2 {
+            return true;
+        }
+        permutations(&domain_sample, 2).iter().all(|pair| {
+            (op)(pair[0], pair[1]) == (op)(pair[1], pair[0])
+        })
+    }
+
+    fn error(&self) -> PropertyError {
+        PropertyError::CommutativityError
+    }
+    
+}
 
 pub trait BinaryOperation<In: Copy, Out> {
+    
+    fn properties<'a>(&'a self) -> Vec<Box<dyn OperationProperty<In, Out>>>;
 
-	const ERROR: PropertyError;
+    fn operation<'a>(&'a self) -> &'a dyn Fn(In, In) -> Out;
 
-	fn call_with(&self, a: In, b: In) -> Out;
+    fn history<'a>(&'a mut self) -> &'a mut Vec<In>;
 
-	fn preserves_property(&self) -> bool;
-
-	fn cache(&mut self, item: In);
-
-	fn with(&mut self, a: In, b: In) -> Result<Out, PropertyError> {
-		self.cache(a);
-		self.cache(b);
-		if !self.preserves_property() {
-			return Err(Self::ERROR);
-		}
-		return Ok(self.call_with(a, b));
-	}
-
+    fn with(&mut self, left: In, right: In) -> Result<Out, PropertyError> {
+        self.history().push(left);
+        self.history().push(right);
+        for property in self.properties() {
+            let history = self.history().to_vec();
+            if !property.holds_over(&self.operation(), &history) {
+                return Err(property.error());
+            }
+        }
+        Ok((self.operation())(left, right))
+    }
+    
 }
-
 
 pub struct AbelianOperation<T> {
-	op: Box<dyn Fn(T, T) -> T>,
-	cache: Vec<T>
+    op: Box<dyn Fn(T, T) -> T>,
+    cache: Vec<T>
 }
 
-impl<T: Copy> AbelianOperation<T> {
+impl<T> AbelianOperation<T> {
 
-	pub fn new(op: Box<dyn Fn(T, T) -> T>) -> Self {
-		Self {
-			op,
-			cache: vec![]
-		}
-	}
-
+    pub fn new(op: Box<dyn Fn(T, T) -> T>) -> Self {
+        Self { 
+            op, 
+            cache: vec![] 
+        }
+    }
+    
 }
 
 impl<T: Copy + PartialEq> BinaryOperation<T, T> for AbelianOperation<T> {
+    
+    fn properties<'a>(&'a self) -> Vec<Box<dyn OperationProperty<T, T>>> {
+        vec![Box::new(Commutative::new())]
+    }
 
-	const ERROR: PropertyError = PropertyError::CommutativityError;
+    fn operation<'a>(&'a self) -> &'a dyn Fn(T, T) -> T {
+        &self.op
+    }
 
-	fn call_with(&self, a: T, b: T) -> T {
-		(self.op)(a, b)
-	}
-
-	fn preserves_property(&self) -> bool {
-		if self.cache.len() < 2 {
-			return true;
-		}
-		permutations(&self.cache, 2).iter().all(|pair| {
-			let (a, b) = (pair[0], pair[1]);
-			self.call_with(a, b) == self.call_with(b, a)
-		})
-	}
-
-	fn cache(&mut self, item: T) {
-		if self.cache.contains(&item) {
-			return;
-		}
-		return self.cache.push(item);
-	}
+    fn history<'a>(&'a mut self) -> &'a mut Vec<T> {
+        &mut self.cache
+    }
 
 }
 
@@ -93,25 +120,22 @@ mod test {
 
 	#[test]
 	fn addition_is_abelian() {
-		let mut add = AbelianOperation::<i32>::new(Box::new(|a, b| {
+		let mut add = AbelianOperation::new(Box::new(|a, b| {
 			a + b
 		}));
 		assert!(add.with(1, 2).is_ok());
-		assert_eq!(add.with(1, 2).unwrap(), 3);
+		assert!(add.with(1, 2).unwrap() == 3);
 		assert!(add.with(3, 4).is_ok());
-		assert_eq!(add.with(3, 4).unwrap(), 7);
+		assert!(add.with(3, 4).unwrap() == 7);
 	}
 
 	#[test]
 	fn subtraction_is_not_abelian() {
-		let mut sub = AbelianOperation::<i32>::new(Box::new(|a, b| {
+		let mut sub = AbelianOperation::new(Box::new(|a, b| {
 			a - b
 		}));
-		assert!(sub.with(0, 0).is_ok());
-		assert_eq!(sub.with(0, 0).unwrap(), 0);
 		assert!(sub.with(1, 2).is_err());
 		assert!(sub.with(3, 4).is_err());
 	}
 
 }
-

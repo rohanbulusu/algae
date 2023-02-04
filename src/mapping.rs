@@ -1,6 +1,9 @@
 fn permutations<T: Clone>(collection: &Vec<T>, group_size: usize) -> Vec<Vec<T>> {
     let mut groupings: Vec<Vec<T>> = vec![];
     for chunk in collection.chunks(group_size) {
+        if chunk.len() != group_size {
+            continue;
+        }
         groupings.push(chunk.to_vec());
     }
     groupings
@@ -33,9 +36,12 @@ pub enum PropertyType {
 
 impl PropertyType {
 
-    pub fn holds_over<'a, In: Copy, Out: PartialEq>(&self, op: &'a dyn Fn(In, In) -> Out, domain_sample: &Vec<In>) -> bool {
+    pub fn holds_over<'a, T: Copy + PartialEq>(&self, op: &'a dyn Fn(T, T) -> T, domain_sample: &Vec<T>) -> bool {
         match self {
             Self::Commutative | Self::Abelian => {
+                if domain_sample.len() < 2 {
+                    return true;
+                }
                 permutations(domain_sample, 2).iter().all(|pair| {
                     let left = (op)(pair[0], pair[1]);
                     let right = (op)(pair[1], pair[0]);
@@ -43,7 +49,14 @@ impl PropertyType {
                 })
             },
             Self::Associative => {
-                true
+                if domain_sample.len() < 3 {
+                    return true;
+                }
+                permutations(domain_sample, 3).iter().all(|triple| {
+                    let left_first = (op)((op)(triple[0], triple[1]), triple[2]);
+                    let right_first = (op)(triple[0], (op)(triple[1], triple[2]));
+                    left_first == right_first
+                })
             }
         }
     }
@@ -63,10 +76,10 @@ impl PropertyType {
 /// input history is required by `input_history`, and the caching mechanism is
 /// given by `cache`. The operation itself is given by a reference to a
 /// function via `operation`.
-pub trait BinaryOperation<In: Copy, Out: PartialEq> {
+pub trait BinaryOperation<T: Copy + PartialEq> {
 
     /// Returns a reference to the function underlying the operation
-    fn operation<'a>(&'a self) -> &'a dyn Fn(In, In) -> Out;
+    fn operation<'a>(&'a self) -> &'a dyn Fn(T, T) -> T;
 
     /// Vec of all enforced properties
     fn properties(&self) -> Vec<PropertyType>;
@@ -77,17 +90,17 @@ pub trait BinaryOperation<In: Copy, Out: PartialEq> {
     }
 
     /// Returns a reference to a Vec of all previous inputs to the operation
-    fn input_history(&self) -> &Vec<In>;
+    fn input_history(&self) -> &Vec<T>;
 
     /// Caches the given `input` to the operation's input history
-    fn cache(&mut self, input: In);
+    fn cache(&mut self, input: T);
 
     /// Returns the result of performing the given operation.
     /// 
     /// If the operation is found not to obey all of its stated properties,
     /// an appropriate Err will be returned; if else, an Ok wrapping the
     /// proper result of the operation with the given inputs will be returned.
-    fn with(&mut self, left: In, right: In) -> Result<Out, PropertyError> {
+    fn with(&mut self, left: T, right: T) -> Result<T, PropertyError> {
         self.cache(left);
         self.cache(right);
         for property in self.properties() {
@@ -109,8 +122,6 @@ pub trait BinaryOperation<In: Copy, Out: PartialEq> {
 }
 
 /// A function wrapper enforcing commutativity.
-///
-/// Calling `with` 
 ///
 /// # Examples
 /// 
@@ -151,14 +162,78 @@ impl<'a, T> AbelianOperation<'a, T> {
 
 }
 
-impl<'a, T: Copy + PartialEq> BinaryOperation<T, T> for AbelianOperation<'a, T> {
+impl<'a, T: Copy + PartialEq> BinaryOperation<T> for AbelianOperation<'a, T> {
 
     fn operation(&self) -> &dyn Fn(T, T) -> T {
         self.op
     }
 
     fn properties(&self) -> Vec<PropertyType> {
-        vec![PropertyType::Commutative]
+        vec![PropertyType::Commutative, PropertyType::Abelian]
+    }
+
+    fn input_history(&self) -> &Vec<T> {
+        &self.history
+    }
+
+    fn cache(&mut self, input: T) {
+        self.history.push(input);
+    }
+
+}
+
+/// A function wrapper enforcing associativity.
+///
+/// # Examples
+/// 
+/// ```
+/// # use algae::mapping::AssociativeOperation;
+/// # use algae::mapping::BinaryOperation;
+/// let mut mul = AssociativeOperation::new(&|a, b| {
+///     a * b
+/// });
+/// 
+/// let six = mul.with(2, 3);
+/// let twenty = mul.with(4, 5);
+/// assert!(six.is_ok());
+/// assert!(six.unwrap() == 6);
+/// assert!(twenty.is_ok());
+/// assert!(twenty.unwrap() == 20);
+/// 
+/// let mut div = AssociativeOperation::new(&|a, b| {
+///     a / b
+/// });
+/// 
+/// let whole_dividend = div.with(4.0, 2.0);
+/// assert!(whole_dividend.is_ok());
+/// assert!(whole_dividend.unwrap() == 2.0);
+/// let fractional_dividend = div.with(3.0, 1.0);
+/// assert!(fractional_dividend.is_err());
+/// ```
+pub struct AssociativeOperation<'a, T> {
+    op: &'a dyn Fn(T, T) -> T,
+    history: Vec<T>
+}
+
+impl<'a, T> AssociativeOperation<'a, T> {
+
+    pub fn new(op: &'a dyn Fn(T, T) -> T) -> Self {
+        Self {
+            op,
+            history: vec![]
+        }
+    }
+
+}
+
+impl<'a, T: Copy + PartialEq> BinaryOperation<T> for AssociativeOperation<'a, T> {
+
+    fn operation(&self) -> &dyn Fn(T, T) -> T {
+        self.op
+    }
+
+    fn properties(&self) -> Vec<PropertyType> {
+        vec![PropertyType::Associative]
     }
 
     fn input_history(&self) -> &Vec<T> {

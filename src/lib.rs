@@ -2,4 +2,4 @@
 #![allow(dead_code)]
 
 pub mod algaeset;
-pub mod mappings;
+pub mod mapping;

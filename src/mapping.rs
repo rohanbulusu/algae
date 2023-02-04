@@ -89,7 +89,7 @@ impl<T: Copy + PartialEq> PropertyType<T> {
 pub trait BinaryOperation<T: Copy + PartialEq> {
 
     /// Returns a reference to the function underlying the operation
-    fn operation<'a>(&'a self) -> &'a dyn Fn(T, T) -> T;
+    fn operation(&self) -> &dyn Fn(T, T) -> T;
 
     /// Vec of all enforced properties
     fn properties(&self) -> Vec<PropertyType<T>>;

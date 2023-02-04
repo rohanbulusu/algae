@@ -1,4 +1,4 @@
-fn permutations<T: Clone>(collection: &Vec<T>, group_size: usize) -> Vec<Vec<T>> {
+fn permutations<T: Clone>(collection: &[T], group_size: usize) -> Vec<Vec<T>> {
     let mut groupings: Vec<Vec<T>> = vec![];
     for chunk in collection.chunks(group_size) {
         if chunk.len() != group_size {

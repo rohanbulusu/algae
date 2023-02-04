@@ -4,6 +4,7 @@ pub struct AlgaeSet<E> {
 }
 
 impl<E> AlgaeSet<E> {
+
     pub fn new(pos_conditions: Vec<Box<dyn Fn(E) -> bool>>) -> Self {
         Self {
             pos_conditions,
@@ -11,10 +12,12 @@ impl<E> AlgaeSet<E> {
         }
     }
 
+    /// Returns an AlgaeSet defined by a single condition
     pub fn mono(condition: Box<dyn Fn(E) -> bool>) -> Self {
         Self::new(vec![condition])
     }
 
+    /// Returns an AlgaeSet defined purely by the underlying type E
     pub fn all() -> Self {
         Self {
             pos_conditions: vec![Box::new(|_x: E| true)],
@@ -24,29 +27,37 @@ impl<E> AlgaeSet<E> {
 }
 
 impl<E: Copy + Clone> AlgaeSet<E> {
+
+    /// Returns whether or not `element` is in the given set
     pub fn has(&self, element: E) -> bool {
         if self.neg_conditions.iter().any(|c| (c)(element)) {
             return false;
         }
         return self.pos_conditions.iter().any(|c| (c)(element));
     }
+
 }
 
 impl<E: PartialEq + Copy + Clone + 'static> AlgaeSet<E> {
+
+    /// Adds `element` to the given set
     fn add(&mut self, element: E) {
         self.neg_conditions.retain(|c| !(c)(element));
         self.pos_conditions.push(Box::new(move |x: E| x == element))
     }
 
+    /// Removes `element` from the given set
     fn remove(&mut self, element: E) {
         self.pos_conditions.retain(|c| (c)(element));
         self.neg_conditions.push(Box::new(move |x: E| x == element))
     }
 
+    /// Adds all elements from `other` to `self`
     fn or(&mut self, other: Self) {
         self.pos_conditions.push(Box::new(move |x: E| other.has(x)));
     }
 
+    /// Removes all elements from `self` that aren't in `other`
     fn and(&mut self, other: Self) {
         self.neg_conditions
             .push(Box::new(move |x: E| !other.has(x)));
@@ -288,5 +299,4 @@ mod tests {
             assert!(!one.has(2));
         }
     }
-    
 }

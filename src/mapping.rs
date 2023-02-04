@@ -53,7 +53,7 @@ impl<T: Copy + PartialEq> PropertyType<T> {
         }
     }
 
-    fn commutativity_holds_over<'a>(op: &'a dyn Fn(T, T) -> T, domain_sample: &Vec<T>) -> bool {
+    fn commutativity_holds_over(op: &dyn Fn(T, T) -> T, domain_sample: &Vec<T>) -> bool {
         if domain_sample.len() < 2 {
             return true;
         }
@@ -64,7 +64,7 @@ impl<T: Copy + PartialEq> PropertyType<T> {
         })
     }
 
-    fn associativity_holds_over<'a>(op: &'a dyn Fn(T, T) -> T, domain_sample: &Vec<T>) -> bool {
+    fn associativity_holds_over(op: &dyn Fn(T, T) -> T, domain_sample: &Vec<T>) -> bool {
         if domain_sample.len() < 3 {
             return true;
         }
@@ -75,7 +75,7 @@ impl<T: Copy + PartialEq> PropertyType<T> {
         })
     }
 
-    fn identity_holds_over<'a>(op: &'a dyn Fn(T, T) -> T, domain_sample: &Vec<T>, identity: T) -> bool {
+    fn identity_holds_over(op: &dyn Fn(T, T) -> T, domain_sample: &Vec<T>, identity: T) -> bool {
         return domain_sample.iter().all(|e| {
             let from_left = (op)(identity, *e);
             let from_right = (op)(*e, identity);

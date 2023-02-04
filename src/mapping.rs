@@ -42,33 +42,45 @@ impl<T: Copy + PartialEq> PropertyType<T> {
     pub fn holds_over<'a>(&self, op: &'a dyn Fn(T, T) -> T, domain_sample: &Vec<T>) -> bool {
         match self {
             Self::Commutative | Self::Abelian => {
-                if domain_sample.len() < 2 {
-                    return true;
-                }
-                permutations(domain_sample, 2).iter().all(|pair| {
-                    let left = (op)(pair[0], pair[1]);
-                    let right = (op)(pair[1], pair[0]);
-                    left == right
-                })
+                Self::commutativity_holds_over(op, domain_sample)
             },
             Self::Associative => {
-                if domain_sample.len() < 3 {
-                    return true;
-                }
-                permutations(domain_sample, 3).iter().all(|triple| {
-                    let left_first = (op)((op)(triple[0], triple[1]), triple[2]);
-                    let right_first = (op)(triple[0], (op)(triple[1], triple[2]));
-                    left_first == right_first
-                })
+                Self::associativity_holds_over(op, domain_sample)
             },
             Self::WithIdentity(identity) => {
-                domain_sample.iter().all(|e| {
-                    let from_left = (op)(*identity, *e);
-                    let from_right = (op)(*e, *identity);
-                    from_left == from_right
-                })
+                Self::identity_holds_over(op, domain_sample, *identity)
             }
         }
+    }
+
+    fn commutativity_holds_over<'a>(op: &'a dyn Fn(T, T) -> T, domain_sample: &Vec<T>) -> bool {
+        if domain_sample.len() < 2 {
+            return true;
+        }
+        return permutations(domain_sample, 2).iter().all(|pair| {
+            let left = (op)(pair[0], pair[1]);
+            let right = (op)(pair[1], pair[0]);
+            left == right
+        })
+    }
+
+    fn associativity_holds_over<'a>(op: &'a dyn Fn(T, T) -> T, domain_sample: &Vec<T>) -> bool {
+        if domain_sample.len() < 3 {
+            return true;
+        }
+        return permutations(domain_sample, 3).iter().all(|triple| {
+            let left_first = (op)((op)(triple[0], triple[1]), triple[2]);
+            let right_first = (op)(triple[0], (op)(triple[1], triple[2]));
+            left_first == right_first
+        })
+    }
+
+    fn identity_holds_over<'a>(op: &'a dyn Fn(T, T) -> T, domain_sample: &Vec<T>, identity: T) -> bool {
+        return domain_sample.iter().all(|e| {
+            let from_left = (op)(identity, *e);
+            let from_right = (op)(*e, identity);
+            (*e == from_left) && (*e == from_right)
+        })
     }
     
 }
@@ -258,4 +270,5 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for AssociativeOperation<'a, T>
     }
 
 }
+
 

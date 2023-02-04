@@ -50,7 +50,7 @@ impl PropertyType {
     
 }
 
-pub trait AlgaeOperation<In: Copy, Out: PartialEq> {
+pub trait BinaryOperation<In: Copy, Out: PartialEq> {
 
     fn operation<'a>(&'a self) -> &'a dyn Fn(In, In) -> Out;
 
@@ -93,7 +93,7 @@ pub trait AlgaeOperation<In: Copy, Out: PartialEq> {
 /// 
 /// ```
 /// # use algae::mapping::AbelianOperation;
-/// # use algae::mapping::AlgaeOperation;
+/// # use algae::mapping::BinaryOperation;
 /// let mut add = AbelianOperation::new(&|a, b| {
 ///     a + b
 /// });
@@ -128,7 +128,7 @@ impl<'a, T> AbelianOperation<'a, T> {
 
 }
 
-impl<'a, T: Copy + PartialEq> AlgaeOperation<T, T> for AbelianOperation<'a, T> {
+impl<'a, T: Copy + PartialEq> BinaryOperation<T, T> for AbelianOperation<'a, T> {
 
     fn operation(&self) -> &dyn Fn(T, T) -> T {
         self.op

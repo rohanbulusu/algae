@@ -13,6 +13,7 @@ fn permutations<T: Clone>(collection: &Vec<T>, group_size: usize) -> Vec<Vec<T>>
 pub enum PropertyError {
     CommutativityError,
     AssociativityError,
+    IdentityError,
     Other(String),
 }
 
@@ -21,6 +22,7 @@ impl std::fmt::Display for PropertyError {
         let msg = match self {
             PropertyError::CommutativityError => "Operation is not commutative!",
             PropertyError::AssociativityError => "Operation is not associative!",
+            PropertyError::IdentityError => "Operation has no valid identity!",
             PropertyError::Other(error) => error,
         };
         write!(f, "{}", msg)
@@ -28,15 +30,16 @@ impl std::fmt::Display for PropertyError {
 }
 
 #[derive(PartialEq)]
-pub enum PropertyType {
+pub enum PropertyType<T> {
     Commutative,
     Abelian,
-    Associative
+    Associative,
+    WithIdentity(T)
 }
 
-impl PropertyType {
+impl<T: Copy + PartialEq> PropertyType<T> {
 
-    pub fn holds_over<'a, T: Copy + PartialEq>(&self, op: &'a dyn Fn(T, T) -> T, domain_sample: &Vec<T>) -> bool {
+    pub fn holds_over<'a>(&self, op: &'a dyn Fn(T, T) -> T, domain_sample: &Vec<T>) -> bool {
         match self {
             Self::Commutative | Self::Abelian => {
                 if domain_sample.len() < 2 {
@@ -56,6 +59,13 @@ impl PropertyType {
                     let left_first = (op)((op)(triple[0], triple[1]), triple[2]);
                     let right_first = (op)(triple[0], (op)(triple[1], triple[2]));
                     left_first == right_first
+                })
+            },
+            Self::WithIdentity(identity) => {
+                domain_sample.iter().all(|e| {
+                    let from_left = (op)(*identity, *e);
+                    let from_right = (op)(*e, *identity);
+                    from_left == from_right
                 })
             }
         }
@@ -82,10 +92,10 @@ pub trait BinaryOperation<T: Copy + PartialEq> {
     fn operation<'a>(&'a self) -> &'a dyn Fn(T, T) -> T;
 
     /// Vec of all enforced properties
-    fn properties(&self) -> Vec<PropertyType>;
+    fn properties(&self) -> Vec<PropertyType<T>>;
 
     /// Returns whether or not `property` is enforced by the given operation
-    fn is(&self, property: PropertyType) -> bool {
+    fn is(&self, property: PropertyType<T>) -> bool {
         self.properties().contains(&property)
     }
 
@@ -113,6 +123,9 @@ pub trait BinaryOperation<T: Copy + PartialEq> {
                 },
                 PropertyType::Associative => {
                     return Err(PropertyError::AssociativityError);
+                },
+                PropertyType::WithIdentity(_) => {
+                    return Err(PropertyError::IdentityError);
                 }
             }
         }
@@ -168,7 +181,7 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for AbelianOperation<'a, T> {
         self.op
     }
 
-    fn properties(&self) -> Vec<PropertyType> {
+    fn properties(&self) -> Vec<PropertyType<T>> {
         vec![PropertyType::Commutative, PropertyType::Abelian]
     }
 
@@ -232,7 +245,7 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for AssociativeOperation<'a, T>
         self.op
     }
 
-    fn properties(&self) -> Vec<PropertyType> {
+    fn properties(&self) -> Vec<PropertyType<T>> {
         vec![PropertyType::Associative]
     }
 

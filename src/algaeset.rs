@@ -4,7 +4,6 @@ pub struct AlgaeSet<E> {
 }
 
 impl<E> AlgaeSet<E> {
-
     pub fn new(pos_conditions: Vec<Box<dyn Fn(E) -> bool>>) -> Self {
         Self {
             pos_conditions,
@@ -27,7 +26,6 @@ impl<E> AlgaeSet<E> {
 }
 
 impl<E: Copy + Clone> AlgaeSet<E> {
-
     /// Returns whether or not `element` is in the given set
     pub fn has(&self, element: E) -> bool {
         if self.neg_conditions.iter().any(|c| (c)(element)) {
@@ -35,11 +33,9 @@ impl<E: Copy + Clone> AlgaeSet<E> {
         }
         return self.pos_conditions.iter().any(|c| (c)(element));
     }
-
 }
 
 impl<E: PartialEq + Copy + Clone + 'static> AlgaeSet<E> {
-
     /// Adds `element` to the given set
     fn add(&mut self, element: E) {
         self.neg_conditions.retain(|c| !(c)(element));

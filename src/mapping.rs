@@ -75,7 +75,7 @@ impl<T: Copy + PartialEq> PropertyType<T> {
         })
     }
 
-    fn identity_holds_over(op: &dyn Fn(T, T) -> T, domain_sample: &Vec<T>, identity: T) -> bool {
+    fn identity_holds_over(op: &dyn Fn(T, T) -> T, domain_sample: &[T], identity: T) -> bool {
         return domain_sample.iter().all(|e| {
             let from_left = (op)(identity, *e);
             let from_right = (op)(*e, identity);

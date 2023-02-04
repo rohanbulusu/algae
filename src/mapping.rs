@@ -50,20 +50,43 @@ impl PropertyType {
     
 }
 
+/// Common interface for all Algae operations.
+///
+/// All operations in Algae implement AlgaeOperation. This trait's key feature
+/// is the provided `with` method, which provides a common interface both for 
+/// retrieving the results of binary operations in Algae and for enforcing
+/// their specified properties.
+///
+/// Property enforcement is done by keeping a history of all the inputs given
+/// to the operation. The property is enforced among all combinations of 
+/// previous inputs every time the operation is called. The existence of the
+/// input history is required by `input_history`, and the caching mechanism is
+/// given by `cache`. The operation itself is given by a reference to a
+/// function via `operation`.
 pub trait BinaryOperation<In: Copy, Out: PartialEq> {
 
+    /// Returns a reference to the function underlying the operation
     fn operation<'a>(&'a self) -> &'a dyn Fn(In, In) -> Out;
 
+    /// Vec of all enforced properties
     fn properties(&self) -> Vec<PropertyType>;
 
+    /// Returns whether or not `property` is enforced by the given operation
     fn is(&self, property: PropertyType) -> bool {
         self.properties().contains(&property)
     }
 
+    /// Returns a reference to a Vec of all previous inputs to the operation
     fn input_history(&self) -> &Vec<In>;
 
+    /// Caches the given `input` to the operation's input history
     fn cache(&mut self, input: In);
 
+    /// Returns the result of performing the given operation.
+    /// 
+    /// If the operation is found not to obey all of its stated properties,
+    /// an appropriate Err will be returned; if else, an Ok wrapping the
+    /// proper result of the operation with the given inputs will be returned.
     fn with(&mut self, left: In, right: In) -> Result<Out, PropertyError> {
         self.cache(left);
         self.cache(right);

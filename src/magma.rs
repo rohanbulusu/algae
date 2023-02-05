@@ -280,3 +280,9 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Monoid<'a, T> {
         self.binop
     }
 }
+
+impl<'a, T> Into<Magma<'a, T>> for Monoid<'a, T> {
+    fn into(self) -> Magma<'a, T> {
+        Magma::new(self.aset, self.binop)
+    }
+}

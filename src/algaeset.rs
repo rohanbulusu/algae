@@ -1,9 +1,41 @@
+/// A representation of a ZF set.
+///
+/// All elements must belong to a "supertype" `E`. Subsets of the supertype are
+/// determined by a given set of conditions (similar to the conditions used in
+/// the set construction paradigm of traditional ZF set theory).
+///
+/// Element existence (ie. whether or not a certain element is a member of a
+/// given set) is given through the [`has`](fn@AlgaeSet::has) function. Set
+/// unions are given by the [`or`](fn@AlgaeSet::or) function, and set
+/// intersections are given by the [`and`](fn@AlgaeSet::and) function.
+///
+/// # Examples
+///
+/// ```
+/// use algae_rs::algaeset::AlgaeSet;
+///
+/// let mut pos_floats = AlgaeSet::new(vec![
+///     Box::new(|e: f32| e > 0_f32)
+/// ]);
+///
+/// assert!(pos_floats.has(12_f32));
+///
+/// let neg_floats = AlgaeSet::new(vec![
+///     Box::new(|e: f32| e < 0_f32)
+/// ]);
+///
+/// pos_floats.or(neg_floats);
+/// let all_floats = pos_floats;
+/// assert!(all_floats.has(12_f32));
+/// assert!(all_floats.has(-12_f32));
+/// ```
 pub struct AlgaeSet<E> {
     pos_conditions: Vec<Box<dyn Fn(E) -> bool>>,
     neg_conditions: Vec<Box<dyn Fn(E) -> bool>>,
 }
 
 impl<E> AlgaeSet<E> {
+    /// Returns an AlgaeSet defined by a `Vec` of conditions
     pub fn new(pos_conditions: Vec<Box<dyn Fn(E) -> bool>>) -> Self {
         Self {
             pos_conditions,
@@ -16,7 +48,7 @@ impl<E> AlgaeSet<E> {
         Self::new(vec![condition])
     }
 
-    /// Returns an AlgaeSet defined purely by the underlying type E
+    /// Returns an AlgaeSet containing all members of the type `E`
     pub fn all() -> Self {
         Self {
             pos_conditions: vec![Box::new(|_x: E| true)],
@@ -37,24 +69,24 @@ impl<E: Copy + Clone> AlgaeSet<E> {
 
 impl<E: PartialEq + Copy + Clone + 'static> AlgaeSet<E> {
     /// Adds `element` to the given set
-    fn add(&mut self, element: E) {
+    pub fn add(&mut self, element: E) {
         self.neg_conditions.retain(|c| !(c)(element));
         self.pos_conditions.push(Box::new(move |x: E| x == element))
     }
 
     /// Removes `element` from the given set
-    fn remove(&mut self, element: E) {
+    pub fn remove(&mut self, element: E) {
         self.pos_conditions.retain(|c| (c)(element));
         self.neg_conditions.push(Box::new(move |x: E| x == element))
     }
 
     /// Adds all elements from `other` to `self`
-    fn or(&mut self, other: Self) {
+    pub fn or(&mut self, other: Self) {
         self.pos_conditions.push(Box::new(move |x: E| other.has(x)));
     }
 
     /// Removes all elements from `self` that aren't in `other`
-    fn and(&mut self, other: Self) {
+    pub fn and(&mut self, other: Self) {
         self.neg_conditions
             .push(Box::new(move |x: E| !other.has(x)));
     }

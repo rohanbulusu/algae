@@ -94,6 +94,7 @@ pub struct Groupoid<'a, T> {
 
 impl<'a, T> Groupoid<'a, T> {
     pub fn new(aset: AlgaeSet<T>, binop: &'a mut dyn BinaryOperation<T>) -> Self {
+    	assert!(binop.is(PropertyType::Associative));
         Self { aset, binop }
     }
 }

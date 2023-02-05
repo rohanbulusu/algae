@@ -13,6 +13,7 @@
 edition = "2021"
 name = "algae"
 version = "0.1.0"
+description = "A collection of abstract algebraic structures implemented in Rust"
 license = "MIT"
 
 [dependencies]

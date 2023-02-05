@@ -31,6 +31,7 @@ fn cayley_product<T: Copy>(collection: &Vec<T>) -> Vec<Vec<T>> {
 pub enum PropertyError {
     CommutativityError,
     AssociativityError,
+    CancellativityError,
     IdentityError,
     Other(String),
 }
@@ -40,6 +41,7 @@ impl std::fmt::Display for PropertyError {
         let msg = match self {
             PropertyError::CommutativityError => "Operation is not commutative!",
             PropertyError::AssociativityError => "Operation is not associative!",
+            PropertyError::CancellativityError => "Operation is not cancellative!",
             PropertyError::IdentityError => "Operation has no valid identity!",
             PropertyError::Other(error) => error,
         };
@@ -52,6 +54,7 @@ pub enum PropertyType<T> {
     Commutative,
     Abelian,
     Associative,
+    Cancellative,
     WithIdentity(T),
 }
 
@@ -60,6 +63,7 @@ impl<T: Copy + PartialEq> PropertyType<T> {
         match self {
             Self::Commutative | Self::Abelian => Self::commutativity_holds_over(op, domain_sample),
             Self::Associative => Self::associativity_holds_over(op, domain_sample),
+            Self::Cancellative => Self::cancellative_holds_over(op, domain_sample),
             Self::WithIdentity(identity) => Self::identity_holds_over(op, domain_sample, *identity),
         }
     }
@@ -92,6 +96,25 @@ impl<T: Copy + PartialEq> PropertyType<T> {
             let from_right = (op)(*e, identity);
             (*e == from_left) && (*e == from_right)
         });
+    }
+
+    fn cancellative_holds_over(op: &dyn Fn(T, T) -> T, domain_sample: &Vec<T>) -> bool {
+        if domain_sample.len() < 3 {
+            return true;
+        }
+        let left_cancellative = permutations(domain_sample, 3).iter().all(|triple| {
+            if (op)(triple[0], triple[1]) == (op)(triple[0], triple[2]) {
+                return triple[1] == triple[2];
+            }
+            true
+        });
+        let right_cancellative = permutations(domain_sample, 3).iter().all(|triple| {
+            if (op)(triple[1], triple[0]) == (op)(triple[2], triple[0]) {
+                return triple[1] == triple[2];
+            }
+            true
+        });
+        left_cancellative && right_cancellative
     }
 }
 
@@ -144,6 +167,9 @@ pub trait BinaryOperation<T: Copy + PartialEq> {
                 }
                 PropertyType::Associative => {
                     return Err(PropertyError::AssociativityError);
+                }
+                PropertyType::Cancellative => {
+                    return Err(PropertyError::CancellativityError);
                 }
                 PropertyType::WithIdentity(_) => {
                     return Err(PropertyError::IdentityError);

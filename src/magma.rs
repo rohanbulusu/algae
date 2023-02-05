@@ -292,3 +292,9 @@ impl<'a, T: Copy + PartialEq> Into<Groupoid<'a, T>> for Monoid<'a, T> {
         Groupoid::new(self.aset, self.binop)
     }
 }
+
+impl<'a, T: Copy + PartialEq> Into<UnitalMagma<'a, T>> for Monoid<'a, T> {
+    fn into(self) -> UnitalMagma<'a, T> {
+        UnitalMagma::new(self.aset, self.binop, self.identity)
+    }
+}

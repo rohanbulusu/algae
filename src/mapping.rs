@@ -59,7 +59,7 @@ pub enum PropertyType<T> {
 }
 
 impl<T: Copy + PartialEq> PropertyType<T> {
-    pub fn holds_over<'a>(&self, op: &'a dyn Fn(T, T) -> T, domain_sample: &Vec<T>) -> bool {
+    pub fn holds_over(&self, op: &dyn Fn(T, T) -> T, domain_sample: &Vec<T>) -> bool {
         match self {
             Self::Commutative | Self::Abelian => Self::commutativity_holds_over(op, domain_sample),
             Self::Associative => Self::associativity_holds_over(op, domain_sample),
@@ -348,7 +348,7 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for CancellativeOperation<'a, T
 ///
 /// ```
 /// use algae_rs::mapping::{IdentityOperation, BinaryOperation};
-/// 
+///
 /// let mut mul = IdentityOperation::new(&|a, b| {
 ///     a * b
 /// }, 1);

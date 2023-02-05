@@ -6,7 +6,25 @@ fn permutations<T: Clone>(collection: &[T], group_size: usize) -> Vec<Vec<T>> {
         }
         groupings.push(chunk.to_vec());
     }
+    let mut reversed_collection = collection.to_vec();
+    reversed_collection.reverse();
+    for chunk in reversed_collection.chunks(group_size) {
+        if chunk.len() != group_size {
+            continue;
+        }
+        groupings.push(chunk.to_vec());
+    }
     groupings
+}
+
+fn cayley_product<T: Copy>(collection: &Vec<T>) -> Vec<Vec<T>> {
+    let mut pairs: Vec<Vec<T>> = vec![];
+    for x in collection {
+        for y in collection {
+            pairs.push(vec![*x, *y]);
+        }
+    }
+    pairs
 }
 
 #[derive(Debug)]
@@ -362,5 +380,39 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for MonoidOperation<'a, T> {
 
     fn cache(&mut self, input: T) {
         self.history.push(input);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::{cayley_product, permutations};
+
+    #[test]
+    fn pair_permutations() {
+        let v = &[1, 2, 3];
+        let pairs = permutations(v, 2);
+        assert!(pairs.contains(&vec![1, 2]));
+        assert!(pairs.contains(&vec![3, 2]));
+    }
+
+    #[test]
+    fn cayley_product_works() {
+        let v = vec![1, 2, 3];
+        let product = cayley_product(&v);
+        assert!(
+            product
+                == vec![
+                    vec![1, 1],
+                    vec![1, 2],
+                    vec![1, 3],
+                    vec![2, 1],
+                    vec![2, 2],
+                    vec![2, 3],
+                    vec![3, 1],
+                    vec![3, 2],
+                    vec![3, 3]
+                ]
+        );
     }
 }

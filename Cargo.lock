@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "algae"
+name = "algae-rs"
 version = "0.1.0"

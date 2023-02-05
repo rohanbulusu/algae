@@ -298,3 +298,70 @@ impl<'a, T: Copy + PartialEq> Into<UnitalMagma<'a, T>> for Monoid<'a, T> {
         UnitalMagma::new(self.aset, self.binop, self.identity)
     }
 }
+
+
+/// A quasigroup with identity
+///
+/// [`Loop`] is a representation of the abstract algebraic loop. Cancellativity 
+/// (ie. the Latin Square property) and identity preservation are both required 
+/// of its binary operation. Its construction involves a set (specifically an 
+/// [`AlgaeSet`]) and a [`BinaryOperation`] with the aforementioned properties.
+///
+/// # Examples
+///
+/// ```
+/// use algae_rs::algaeset::AlgaeSet;
+/// use algae_rs::mapping::{BinaryOperation, LoopOperation};
+/// use algae_rs::magma::{Magmoid, Loop};
+///
+/// let mut add = LoopOperation::new(&|a, b| a + b, 0);
+/// let mut quasigroup = Loop::new(
+///     AlgaeSet::<i32>::all(),
+///     &mut add,
+///     0
+/// );
+/// let sum = quasigroup.with(1, 2);
+/// assert!(sum.is_ok());
+/// assert!(sum.unwrap() == 3);
+/// ```
+pub struct Loop<'a, T> {
+    aset: AlgaeSet<T>,
+    binop: &'a mut dyn BinaryOperation<T>,
+    identity: T,
+}
+
+impl<'a, T: Copy + PartialEq> Loop<'a, T> {
+    pub fn new(aset: AlgaeSet<T>, binop: &'a mut dyn BinaryOperation<T>, identity: T) -> Self {
+        assert!(binop.is(PropertyType::Cancellative));
+        assert!(binop.is(PropertyType::WithIdentity(identity)));
+        Self {
+            aset,
+            binop,
+            identity,
+        }
+    }
+}
+
+impl<'a, T: Copy + PartialEq> Magmoid<T> for Loop<'a, T> {
+    fn binop(&mut self) -> &mut dyn BinaryOperation<T> {
+        self.binop
+    }
+}
+
+impl<'a, T> Into<Magma<'a, T>> for Loop<'a, T> {
+    fn into(self) -> Magma<'a, T> {
+        Magma::new(self.aset, self.binop)
+    }
+}
+
+impl<'a, T: Copy + PartialEq> Into<UnitalMagma<'a, T>> for Loop<'a, T> {
+    fn into(self) -> UnitalMagma<'a, T> {
+        UnitalMagma::new(self.aset, self.binop, self.identity)
+    }
+}
+
+impl<'a, T: Copy + PartialEq> Into<Quasigroup<'a, T>> for Loop<'a, T> {
+    fn into(self) -> Quasigroup<'a, T> {
+        Quasigroup::new(self.aset, self.binop)
+    }
+}

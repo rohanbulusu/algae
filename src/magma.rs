@@ -18,8 +18,8 @@ use crate::mapping::{BinaryOperation, PropertyType};
 /// 
 /// let mut add = AbelianOperation::new(&|a, b| a + b);
 /// let mut magma = Magma::new(
-/// 	AlgaeSet::<i32>::all(), 
-/// 	&mut add
+///     AlgaeSet::<i32>::all(), 
+///     &mut add
 /// );
 ///
 /// let magma_sum = magma.with(1, 2);
@@ -82,7 +82,7 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for Magma<'a, T> {
 /// let mut monoid = Monoid::new(
 ///     AlgaeSet::<i32>::all(), 
 ///     &mut add,
-/// 	0
+///     0
 /// );
 ///
 /// let monoid_sum = monoid.with(1, 2);
@@ -91,9 +91,9 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for Magma<'a, T> {
 /// 
 /// let mut bad_add = MonoidOperation::new(&|a, b| a + b, 1);
 /// let mut bad_monoid = Monoid::new(
-/// 	AlgaeSet::<i32>::all(),
-/// 	&mut bad_add,
-/// 	1
+///     AlgaeSet::<i32>::all(),
+///     &mut bad_add,
+///     1
 /// );
 /// 
 /// let bad_monoid_sum = bad_monoid.with(1, 2);

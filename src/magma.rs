@@ -14,7 +14,7 @@ pub trait Magmoid<T: Copy + PartialEq> {
 /// This is a representation of the simplest algebraic structure: the magma.
 /// There are no specific properties required of its components, so its
 /// construction involves nothing more than a set (specifically an
-/// [`AlgaeSet`] and a binary operation (anything implementing 
+/// [`AlgaeSet`] and a binary operation (anything implementing
 /// [`BinaryOperation`]).
 ///
 /// # Examples
@@ -166,8 +166,8 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Groupoid<'a, T> {
 /// A set equipped with a cancellative binary operation.
 ///
 /// [`Quasigroup`] is a representation of the abstract algebraic quasigroup.
-/// Cancellativity (ie. the Latin Square property) is required of its binary 
-/// operation. Its construction involves a set (specifically an [`AlgaeSet`]) 
+/// Cancellativity (ie. the Latin Square property) is required of its binary
+/// operation. Its construction involves a set (specifically an [`AlgaeSet`])
 /// and a [`BinaryOperation`] with the aforementioned properties.
 ///
 /// # Examples
@@ -206,9 +206,9 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Quasigroup<'a, T> {
 
 /// A set equipped with an associative binary operation with identity.
 ///
-/// [`Monoid`] is a representation of the abstract algebraic monoid. 
+/// [`Monoid`] is a representation of the abstract algebraic monoid.
 /// Associativity and identity are required of its binary operation. Its
-/// construction involves a set (specifically an [`AlgaeSet`] and a 
+/// construction involves a set (specifically an [`AlgaeSet`] and a
 /// [`BinaryOperation`] with the aforementioned properties.
 ///
 /// # Examples

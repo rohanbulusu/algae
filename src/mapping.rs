@@ -297,13 +297,58 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for AssociativeOperation<'a, T>
     }
 }
 
+/// A function wrapper enforcing cancellativity.
+///
+/// # Examples
+///
+/// ```
+/// use algae_rs::mapping::{CancellativeOperation, BinaryOperation};
+///
+/// let mut mul = CancellativeOperation::new(&|a, b| a * b);
+///
+/// let six = mul.with(2, 3);
+/// assert!(six.is_ok());
+/// assert!(six.unwrap() == 6);
+/// ```
+pub struct CancellativeOperation<'a, T> {
+    op: &'a dyn Fn(T, T) -> T,
+    history: Vec<T>,
+}
+
+impl<'a, T> CancellativeOperation<'a, T> {
+    pub fn new(op: &'a dyn Fn(T, T) -> T) -> Self {
+        Self {
+            op,
+            history: vec![],
+        }
+    }
+}
+
+impl<'a, T: Copy + PartialEq> BinaryOperation<T> for CancellativeOperation<'a, T> {
+    fn operation(&self) -> &dyn Fn(T, T) -> T {
+        self.op
+    }
+
+    fn properties(&self) -> Vec<PropertyType<T>> {
+        vec![PropertyType::Cancellative]
+    }
+
+    fn input_history(&self) -> &Vec<T> {
+        &self.history
+    }
+
+    fn cache(&mut self, input: T) {
+        self.history.push(input);
+    }
+}
+
 /// A function wrapper enforcing identity existence.
 ///
 /// # Examples
 ///
 /// ```
-/// # use algae_rs::mapping::IdentityOperation;
-/// # use algae_rs::mapping::BinaryOperation;
+/// use algae_rs::mapping::{IdentityOperation, BinaryOperation};
+/// 
 /// let mut mul = IdentityOperation::new(&|a, b| {
 ///     a * b
 /// }, 1);
@@ -358,7 +403,6 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for IdentityOperation<'a, T> {
 /// # Examples
 ///
 /// ```
-/// use algae_rs::mapping::IdentityOperation;
 /// use algae_rs::mapping::{MonoidOperation, BinaryOperation};
 ///
 /// let mut mul = MonoidOperation::new(&|a, b| a * b, 1);

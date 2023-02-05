@@ -14,7 +14,8 @@ pub trait Magmoid<T: Copy + PartialEq> {
 /// This is a representation of the simplest algebraic structure: the magma.
 /// There are no specific properties required of its components, so its
 /// construction involves nothing more than a set (specifically an
-/// [`AlgaeSet`] and a binary operation (implementing [`BinaryOperation`]).
+/// [`AlgaeSet`] and a binary operation (anything implementing 
+/// [`BinaryOperation`]).
 ///
 /// # Examples
 ///
@@ -52,11 +53,10 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Magma<'a, T> {
 
 /// A set equipped with a binary operation and a specified identity element.
 ///
-/// This is a representation of the unital magmas of abstract algebra.
+/// [`UnitalMagma`] is a representation of the abstract algebraic unital magma.
 /// The existence of an identity element is all that is required of its
-/// binary operation: its construction involves a set (specifically an
-/// [`AlgaeSet`]) and an identity-preserving binary operation (implementing)
-/// [`BinaryOperation`]).
+/// binary operation. Its construction requires a set (specifically an
+/// [`AlgaeSet`]) and an identity-preserving [`BinaryOperation`].
 ///
 /// # Examples
 ///
@@ -111,10 +111,10 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for UnitalMagma<'a, T> {
 
 /// A set equipped with an associative binary operation.
 ///
-/// This is a representation of the monoids of abstract algebra.
+/// [`Groupoid`] is a representation of the abstract algebraic groupoid.
 /// Associativity is all that is required of its binary operation: its
-/// construction involves a set (specifically an [`AlgaeSet`] and an
-/// associative binary operation (implementing [`BinaryOperation`]).
+/// construction involves a set (specifically an [`AlgaeSet`]) and an
+/// associative [`BinaryOperation`].
 ///
 /// # Examples
 ///
@@ -165,11 +165,10 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Groupoid<'a, T> {
 
 /// A set equipped with a cancellative binary operation.
 ///
-/// This is a representation of the quasigroups of abstract algebra.
+/// [`Quasigroup`] is a representation of the abstract algebraic quasigroup.
 /// Cancellativity (ie. the Latin Square property) is required of its binary 
-/// operation: its construction involves a set (specifically an [`AlgaeSet`] 
-/// and a binary operation (anything implementing [`BinaryOperation`]) with 
-/// the aforementioned properties.
+/// operation. Its construction involves a set (specifically an [`AlgaeSet`]) 
+/// and a [`BinaryOperation`] with the aforementioned properties.
 ///
 /// # Examples
 ///
@@ -207,11 +206,10 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Quasigroup<'a, T> {
 
 /// A set equipped with an associative binary operation with identity.
 ///
-/// This is a representation of the monoids of abstract algebra.
-/// Associativity and identity are required of its binary operation: its
-/// construction involves a set (specifically an [`AlgaeSet`] and a binary
-/// operation (anything implementing [`BinaryOperation`]) with the
-/// aforementioned properties.
+/// [`Monoid`] is a representation of the abstract algebraic monoid. 
+/// Associativity and identity are required of its binary operation. Its
+/// construction involves a set (specifically an [`AlgaeSet`] and a 
+/// [`BinaryOperation`] with the aforementioned properties.
 ///
 /// # Examples
 ///

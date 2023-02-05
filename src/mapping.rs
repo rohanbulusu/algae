@@ -308,3 +308,59 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for IdentityOperation<'a, T> {
         self.history.push(input);
     }
 }
+
+/// A function wrapper enforcing identity existence and associativity.
+///
+/// # Examples
+///
+/// ```
+/// use algae_rs::mapping::IdentityOperation;
+/// use algae_rs::mapping::{MonoidOperation, BinaryOperation};
+/// 
+/// let mut mul = MonoidOperation::new(&|a, b| a * b, 1);
+///
+/// let six = mul.with(2, 3);
+/// assert!(six.is_ok());
+/// assert!(six.unwrap() == 6);
+///
+/// let mut add = MonoidOperation::new(&|a, b| a + b, 3);
+///
+/// let sum = add.with(4, 2);
+/// assert!(sum.is_err());
+/// ```
+pub struct MonoidOperation<'a, T> {
+    op: &'a dyn Fn(T, T) -> T,
+    identity: T,
+    history: Vec<T>,
+}
+
+impl<'a, T> MonoidOperation<'a, T> {
+    pub fn new(op: &'a dyn Fn(T, T) -> T, identity: T) -> Self {
+        Self {
+            op,
+            identity,
+            history: vec![],
+        }
+    }
+}
+
+impl<'a, T: Copy + PartialEq> BinaryOperation<T> for MonoidOperation<'a, T> {
+    fn operation(&self) -> &dyn Fn(T, T) -> T {
+        self.op
+    }
+
+    fn properties(&self) -> Vec<PropertyType<T>> {
+        vec![
+            PropertyType::Associative,
+            PropertyType::WithIdentity(self.identity)
+        ]
+    }
+
+    fn input_history(&self) -> &Vec<T> {
+        &self.history
+    }
+
+    fn cache(&mut self, input: T) {
+        self.history.push(input);
+    }
+}

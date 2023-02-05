@@ -1,5 +1,5 @@
 [package]
-name = "algae"
+name = "algae-rs"
 version = "0.1.0"
 edition = "2021"
 description = "A collection of abstract algebraic structures implemented in Rust"

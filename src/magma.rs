@@ -216,6 +216,12 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Quasigroup<'a, T> {
     }
 }
 
+impl<'a, T> Into<Magma<'a, T>> for Quasigroup<'a, T> {
+    fn into(self) -> Magma<'a, T> {
+        Magma::new(self.aset, self.binop)
+    }
+}
+
 /// A set equipped with an associative binary operation with identity.
 ///
 /// [`Monoid`] is a representation of the abstract algebraic monoid.

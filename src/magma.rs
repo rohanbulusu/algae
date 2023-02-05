@@ -51,6 +51,59 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Magma<'a, T> {
     }
 }
 
+/// A set equipped with an associative binary operation.
+///
+/// This is a representation of the monoids of abstract algebra.
+/// Associativity is all that is required of itsbinary operation; its
+/// construction involves a set (specifically an [`AlgaeSet`] and an
+/// associative binary operation (anything implementing [`BinaryOperation`]).
+///
+/// # Examples
+///
+/// ```
+/// use algae_rs::algaeset::AlgaeSet;
+/// use algae_rs::mapping::{BinaryOperation, AssociativeOperation};
+/// use algae_rs::magma::{Magmoid, Groupoid};
+///
+/// let mut add = AssociativeOperation::new(&|a, b| a + b);
+/// let mut groupoid = Groupoid::new(
+///     AlgaeSet::<i32>::all(),
+///     &mut add,
+/// );
+///
+/// let groupoid_sum = groupoid.with(1, 2);
+/// assert!(groupoid_sum.is_ok());
+/// assert!(groupoid_sum.unwrap() == 3);
+///
+/// let mut div = AssociativeOperation::new(&|a, b| a / b);
+/// let mut bad_groupoid = Groupoid::new(
+///     AlgaeSet::<f32>::all(),
+///     &mut div,
+/// );
+///
+/// let ok_dividend = bad_groupoid.with(1.0, 2.0);
+/// assert!(ok_dividend.is_ok());
+/// assert!(ok_dividend.unwrap() == 0.5);
+/// let err_dividend = bad_groupoid.with(3.0, 6.0);
+/// assert!(err_dividend.is_err());
+/// ```
+pub struct Groupoid<'a, T> {
+	aset: AlgaeSet<T>,
+	binop: &'a mut dyn BinaryOperation<T>
+}
+
+impl<'a, T> Groupoid<'a, T> {
+    pub fn new(aset: AlgaeSet<T>, binop: &'a mut dyn BinaryOperation<T>) -> Self {
+        Self { aset, binop }
+    }
+}
+
+impl<'a, T: Copy + PartialEq> Magmoid<T> for Groupoid<'a, T> {
+    fn binop(&mut self) -> &mut dyn BinaryOperation<T> {
+        self.binop
+    }
+}
+
 /// A set equipped with an associative binary operation with identity.
 ///
 /// This is a representation of the monoids of abstract algebra.

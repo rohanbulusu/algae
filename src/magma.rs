@@ -109,6 +109,12 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for UnitalMagma<'a, T> {
     }
 }
 
+impl<'a, T> Into<Magma<'a, T>> for UnitalMagma<'a, T> {
+    fn into(self) -> Magma<'a, T> {
+        Magma::new(self.aset, self.binop)
+    }
+}
+
 /// A set equipped with an associative binary operation.
 ///
 /// [`Groupoid`] is a representation of the abstract algebraic groupoid.

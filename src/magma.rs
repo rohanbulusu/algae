@@ -14,8 +14,7 @@ pub trait Magmoid<T: Copy + PartialEq> {
 /// This is a representation of the simplest algebraic structure: the magma.
 /// There are no specific properties required of its components, so its
 /// construction involves nothing more than a set (specifically an
-/// [`AlgaeSet`] and a binary operation (anything implementing
-/// [`BinaryOperation`]).
+/// [`AlgaeSet`] and a binary operation (implementing [`BinaryOperation`]).
 ///
 /// # Examples
 ///
@@ -51,12 +50,71 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Magma<'a, T> {
     }
 }
 
+/// A set equipped with a binary operation and a specified identity element.
+///
+/// This is a representation of the unital magmas of abstract algebra.
+/// The existence of an identity element is all that is required of its
+/// binary operation: its construction involves a set (specifically an
+/// [`AlgaeSet`]) and an identity-preserving binary operation (implementing)
+/// [`BinaryOperation`]).
+///
+/// # Examples
+///
+/// ```
+/// use algae_rs::algaeset::AlgaeSet;
+/// use algae_rs::mapping::{BinaryOperation, IdentityOperation};
+/// use algae_rs::magma::{Magmoid, UnitalMagma};
+///
+/// let mut add = IdentityOperation::new(&|a, b| a + b, 0);
+/// let mut magma = UnitalMagma::new(
+///     AlgaeSet::<i32>::all(),
+///     &mut add,
+///     0
+/// );
+///
+/// let sum = magma.with(1, 2);
+/// assert!(sum.is_ok());
+/// assert!(sum.unwrap() == 3);
+///
+/// let mut bad_add = IdentityOperation::new(&|a, b| a + b, 3);
+/// let mut bad_magma = UnitalMagma::new(
+///     AlgaeSet::<i32>::all(),
+///     &mut bad_add,
+///     3
+/// );
+///
+/// let bad_sum = bad_magma.with(2, 3);
+/// assert!(bad_sum.is_err());
+/// ```
+pub struct UnitalMagma<'a, T> {
+    aset: AlgaeSet<T>,
+    binop: &'a mut dyn BinaryOperation<T>,
+    identity: T,
+}
+
+impl<'a, T: Copy + PartialEq> UnitalMagma<'a, T> {
+    pub fn new(aset: AlgaeSet<T>, binop: &'a mut dyn BinaryOperation<T>, identity: T) -> Self {
+        assert!(binop.is(PropertyType::WithIdentity(identity)));
+        Self {
+            aset,
+            binop,
+            identity,
+        }
+    }
+}
+
+impl<'a, T: Copy + PartialEq> Magmoid<T> for UnitalMagma<'a, T> {
+    fn binop(&mut self) -> &mut dyn BinaryOperation<T> {
+        self.binop
+    }
+}
+
 /// A set equipped with an associative binary operation.
 ///
 /// This is a representation of the monoids of abstract algebra.
-/// Associativity is all that is required of itsbinary operation; its
+/// Associativity is all that is required of its binary operation: its
 /// construction involves a set (specifically an [`AlgaeSet`] and an
-/// associative binary operation (anything implementing [`BinaryOperation`]).
+/// associative binary operation (implementing [`BinaryOperation`]).
 ///
 /// # Examples
 ///
@@ -68,7 +126,7 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Magma<'a, T> {
 /// let mut add = AssociativeOperation::new(&|a, b| a + b);
 /// let mut groupoid = Groupoid::new(
 ///     AlgaeSet::<i32>::all(),
-///     &mut add,
+///     &mut add
 /// );
 ///
 /// let groupoid_sum = groupoid.with(1, 2);
@@ -88,13 +146,13 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Magma<'a, T> {
 /// assert!(err_dividend.is_err());
 /// ```
 pub struct Groupoid<'a, T> {
-	aset: AlgaeSet<T>,
-	binop: &'a mut dyn BinaryOperation<T>
+    aset: AlgaeSet<T>,
+    binop: &'a mut dyn BinaryOperation<T>,
 }
 
-impl<'a, T> Groupoid<'a, T> {
+impl<'a, T: Copy + PartialEq> Groupoid<'a, T> {
     pub fn new(aset: AlgaeSet<T>, binop: &'a mut dyn BinaryOperation<T>) -> Self {
-    	assert!(binop.is(PropertyType::Associative));
+        assert!(binop.is(PropertyType::Associative));
         Self { aset, binop }
     }
 }
@@ -108,7 +166,7 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Groupoid<'a, T> {
 /// A set equipped with an associative binary operation with identity.
 ///
 /// This is a representation of the monoids of abstract algebra.
-/// Associativity and identity are required of its binary operation; its
+/// Associativity and identity are required of its binary operation: its
 /// construction involves a set (specifically an [`AlgaeSet`] and a binary
 /// operation (anything implementing [`BinaryOperation`]) with the
 /// aforementioned properties.

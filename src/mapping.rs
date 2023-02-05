@@ -33,6 +33,7 @@ pub enum PropertyError {
     AssociativityError,
     CancellativityError,
     IdentityError,
+    InvertibilityError,
     Other(String),
 }
 
@@ -43,19 +44,20 @@ impl std::fmt::Display for PropertyError {
             PropertyError::AssociativityError => "Operation is not associative!",
             PropertyError::CancellativityError => "Operation is not cancellative!",
             PropertyError::IdentityError => "Operation has no valid identity!",
+            PropertyError::InvertibilityError => "Operation is not invertible!",
             PropertyError::Other(error) => error,
         };
         write!(f, "{}", msg)
     }
 }
 
-#[derive(PartialEq)]
 pub enum PropertyType<T> {
     Commutative,
     Abelian,
     Associative,
     Cancellative,
     WithIdentity(T),
+    Invertible(T, Box<dyn Fn(T, T) -> T>)
 }
 
 impl<T: Copy + PartialEq> PropertyType<T> {
@@ -65,6 +67,7 @@ impl<T: Copy + PartialEq> PropertyType<T> {
             Self::Associative => Self::associativity_holds_over(op, domain_sample),
             Self::Cancellative => Self::cancellative_holds_over(op, domain_sample),
             Self::WithIdentity(identity) => Self::identity_holds_over(op, domain_sample, *identity),
+            Self::Invertible(identity, inv) => Self::invertibility_holds_over(op, inv, domain_sample, *identity)
         }
     }
 
@@ -115,6 +118,55 @@ impl<T: Copy + PartialEq> PropertyType<T> {
             true
         });
         left_cancellative && right_cancellative
+    }
+
+    fn invertibility_holds_over(op: &dyn Fn(T, T) -> T, inv: &dyn Fn(T, T) -> T, domain_sample: &Vec<T>, identity: T) -> bool {
+        if domain_sample.len() < 2 {
+            return true;
+        }
+        return permutations(domain_sample, 2).iter().all(|pair| {
+            let inverse_works = (inv)(pair[0], pair[0]) == identity;
+            let left_composition_works = (inv)((op)(pair[0], pair[1]), pair[1]) == pair[0];
+            let right_composition_works = (inv)(pair[1], (op)(pair[0], pair[1])) == pair[0];
+            inverse_works && left_composition_works && right_composition_works
+        })
+    }
+}
+
+impl<T> PartialEq for PropertyType<T> {
+    fn eq(&self, other: &PropertyType<T>) -> bool {
+        match self {
+            Self::Commutative | Self::Abelian => {
+                match other {
+                    Self::Commutative | Self::Abelian => true,
+                    _ => false
+                }
+            },
+            Self::Associative => {
+                match other {
+                    Self::Associative => true,
+                    _ => false
+                }
+            },
+            Self::Cancellative => {
+                match other {
+                    Self::Cancellative => true,
+                    _ => false
+                }
+            },
+            Self::WithIdentity(_) => {
+                match other {
+                    Self::WithIdentity(_) => true,
+                    _ => false
+                }
+            },
+            Self::Invertible(_, _) => {
+                match other {
+                    Self::Invertible(_, _) => true,
+                    _ => false
+                }
+            }
+        }
     }
 }
 
@@ -173,6 +225,9 @@ pub trait BinaryOperation<T: Copy + PartialEq> {
                 }
                 PropertyType::WithIdentity(_) => {
                     return Err(PropertyError::IdentityError);
+                },
+                PropertyType::Invertible(_, _) => {
+                    return Err(PropertyError::InvertibilityError);
                 }
             }
         }

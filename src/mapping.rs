@@ -316,7 +316,7 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for IdentityOperation<'a, T> {
 /// ```
 /// use algae_rs::mapping::IdentityOperation;
 /// use algae_rs::mapping::{MonoidOperation, BinaryOperation};
-/// 
+///
 /// let mut mul = MonoidOperation::new(&|a, b| a * b, 1);
 ///
 /// let six = mul.with(2, 3);
@@ -352,7 +352,7 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for MonoidOperation<'a, T> {
     fn properties(&self) -> Vec<PropertyType<T>> {
         vec![
             PropertyType::Associative,
-            PropertyType::WithIdentity(self.identity)
+            PropertyType::WithIdentity(self.identity),
         ]
     }
 

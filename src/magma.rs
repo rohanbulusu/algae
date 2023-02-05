@@ -163,6 +163,48 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Groupoid<'a, T> {
     }
 }
 
+/// A set equipped with a cancellative binary operation.
+///
+/// This is a representation of the quasigroups of abstract algebra.
+/// Cancellativity (ie. the Latin Square property) is required of its binary 
+/// operation: its construction involves a set (specifically an [`AlgaeSet`] 
+/// and a binary operation (anything implementing [`BinaryOperation`]) with 
+/// the aforementioned properties.
+///
+/// # Examples
+///
+/// ```
+/// use algae_rs::algaeset::AlgaeSet;
+/// use algae_rs::mapping::{BinaryOperation, CancellativeOperation};
+/// use algae_rs::magma::{Magmoid, Quasigroup};
+///
+/// let mut add = CancellativeOperation::new(&|a, b| a + b);
+/// let mut quasigroup = Quasigroup::new(
+///     AlgaeSet::<i32>::all(),
+///     &mut add
+/// );
+/// let sum = quasigroup.with(1, 2);
+/// assert!(sum.is_ok());
+/// assert!(sum.unwrap() == 3);
+/// ```
+pub struct Quasigroup<'a, T> {
+    aset: AlgaeSet<T>,
+    binop: &'a mut dyn BinaryOperation<T>,
+}
+
+impl<'a, T: Copy + PartialEq> Quasigroup<'a, T> {
+    pub fn new(aset: AlgaeSet<T>, binop: &'a mut dyn BinaryOperation<T>) -> Self {
+        assert!(binop.is(PropertyType::Cancellative));
+        Self { aset, binop }
+    }
+}
+
+impl<'a, T: Copy + PartialEq> Magmoid<T> for Quasigroup<'a, T> {
+    fn binop(&mut self) -> &mut dyn BinaryOperation<T> {
+        self.binop
+    }
+}
+
 /// A set equipped with an associative binary operation with identity.
 ///
 /// This is a representation of the monoids of abstract algebra.

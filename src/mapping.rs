@@ -141,8 +141,8 @@ pub trait BinaryOperation<T: Copy + PartialEq> {
 /// # Examples
 ///
 /// ```
-/// # use algae::mapping::AbelianOperation;
-/// # use algae::mapping::BinaryOperation;
+/// # use algae_rs::mapping::AbelianOperation;
+/// # use algae_rs::mapping::BinaryOperation;
 /// let mut add = AbelianOperation::new(&|a, b| {
 ///     a + b
 /// });
@@ -198,8 +198,8 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for AbelianOperation<'a, T> {
 /// # Examples
 ///
 /// ```
-/// # use algae::mapping::AssociativeOperation;
-/// # use algae::mapping::BinaryOperation;
+/// # use algae_rs::mapping::AssociativeOperation;
+/// # use algae_rs::mapping::BinaryOperation;
 /// let mut mul = AssociativeOperation::new(&|a, b| {
 ///     a * b
 /// });
@@ -258,8 +258,8 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for AssociativeOperation<'a, T>
 /// # Examples
 ///
 /// ```
-/// # use algae::mapping::IdentityOperation;
-/// # use algae::mapping::BinaryOperation;
+/// # use algae_rs::mapping::IdentityOperation;
+/// # use algae_rs::mapping::BinaryOperation;
 /// let mut mul = IdentityOperation::new(&|a, b| {
 ///     a * b
 /// }, 1);
@@ -268,11 +268,11 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for AssociativeOperation<'a, T>
 /// assert!(six.is_ok());
 /// assert!(six.unwrap() == 6);
 ///
-/// let mut div = IdentityOperation::new(&|a, b| {
+/// let mut add = IdentityOperation::new(&|a, b| {
 ///     a + b
 /// }, 3);
 ///
-/// let sum = div.with(4, 2);
+/// let sum = add.with(4, 2);
 /// assert!(sum.is_err());
 /// ```
 pub struct IdentityOperation<'a, T> {

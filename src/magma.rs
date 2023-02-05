@@ -12,9 +12,9 @@ use crate::mapping::{BinaryOperation, PropertyType};
 /// # Examples
 /// 
 /// ```
-/// use algae::algaeset::AlgaeSet;
-/// use algae::mapping::{BinaryOperation, AbelianOperation};
-/// use algae::magma::Magma; 
+/// use algae_rs::algaeset::AlgaeSet;
+/// use algae_rs::mapping::{BinaryOperation, AbelianOperation};
+/// use algae_rs::magma::Magma; 
 /// 
 /// let mut add = AbelianOperation::new(&|a, b| a + b);
 /// let mut magma = Magma::new(

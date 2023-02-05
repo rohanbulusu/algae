@@ -169,6 +169,12 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Groupoid<'a, T> {
     }
 }
 
+impl<'a, T> Into<Magma<'a, T>> for Groupoid<'a, T> {
+    fn into(self) -> Magma<'a, T> {
+        Magma::new(self.aset, self.binop)
+    }
+}
+
 /// A set equipped with a cancellative binary operation.
 ///
 /// [`Quasigroup`] is a representation of the abstract algebraic quasigroup.

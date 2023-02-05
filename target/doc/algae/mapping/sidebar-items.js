@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["PropertyError",""],["PropertyType",""]],"struct":[["AbelianOperation","A function wrapper enforcing commutativity."],["AssociativeOperation","A function wrapper enforcing associativity."],["IdentityOperation","A function wrapper enforcing identity existence."]],"trait":[["BinaryOperation","Common interface for all Algae operations."]]};

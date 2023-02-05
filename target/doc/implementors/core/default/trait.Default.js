@@ -1,3 +1,0 @@
-(function() {var implementors = {
-"algae":[["impl&lt;T&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.66.1/core/default/trait.Default.html\" title=\"trait core::default::Default\">Default</a> for <a class=\"struct\" href=\"algae/mappings/struct.ClosedOperation.html\" title=\"struct algae::mappings::ClosedOperation\">ClosedOperation</a>&lt;T&gt;"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

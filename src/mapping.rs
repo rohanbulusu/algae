@@ -127,7 +127,7 @@ impl<'a, T: Copy + PartialEq> PropertyType<'a, T> {
         return permutations(domain_sample, 2).iter().all(|pair| {
             let inverse_works = (inv)(pair[0], pair[0]) == identity;
             let left_composition_works = (inv)((op)(pair[0], pair[1]), pair[1]) == pair[0];
-            let right_composition_works = (inv)(pair[1], (op)(pair[0], pair[1])) == pair[0];
+            let right_composition_works = (inv)((op)(pair[1], pair[0]), pair[1]) == pair[0];
             inverse_works && left_composition_works && right_composition_works
         })
     }
@@ -551,6 +551,63 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for LoopOperation<'a, T> {
         vec![
             PropertyType::Cancellative,
             PropertyType::WithIdentity(self.identity),
+        ]
+    }
+
+    fn input_history(&self) -> &Vec<T> {
+        &self.history
+    }
+
+    fn cache(&mut self, input: T) {
+        self.history.push(input);
+    }
+}
+
+// A function wrapper enforcing identity existence and invertibility.
+///
+/// # Examples
+///
+/// ```
+/// use algae_rs::mapping::{InvertibleOperation, BinaryOperation};
+///
+/// let mut add = InvertibleOperation::new(&|a, b| a + b, &|a, b| a - b, 0);
+///
+/// let seven = add.with(4, 3);
+/// assert!(seven.is_ok());
+/// assert!(seven.unwrap() == 7);
+///
+/// let mut bad_add = InvertibleOperation::new(&|a, b| a + b, &|a, b| a * b, 0);
+///
+/// let sum = bad_add.with(4, 2);
+/// assert!(sum.is_err());
+/// ```
+pub struct InvertibleOperation<'a, T> {
+    op: &'a dyn Fn(T, T) -> T,
+    inv: &'a dyn Fn(T, T) -> T,
+    identity: T,
+    history: Vec<T>,
+}
+
+impl<'a, T> InvertibleOperation<'a, T> {
+    pub fn new(op: &'a dyn Fn(T, T) -> T, inv: &'a dyn Fn(T, T) -> T, identity: T) -> Self {
+        Self {
+            op,
+            inv,
+            identity,
+            history: vec![],
+        }
+    }
+}
+
+impl<'a, T: Copy + PartialEq> BinaryOperation<T> for InvertibleOperation<'a, T> {
+    fn operation(&self) -> &dyn Fn(T, T) -> T {
+        self.op
+    }
+
+    fn properties(&self) -> Vec<PropertyType<T>> {
+        vec![
+            PropertyType::WithIdentity(self.identity),
+            PropertyType::Invertible(self.identity, self.inv)
         ]
     }
 

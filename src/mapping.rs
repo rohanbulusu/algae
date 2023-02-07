@@ -188,10 +188,10 @@ pub trait BinaryOperation<T: Copy + PartialEq> {
     fn operation(&self) -> &dyn Fn(T, T) -> T;
 
     /// Vec of all enforced properties
-    fn properties(&self) -> Vec<PropertyType<T>>;
+    fn properties(&self) -> Vec<PropertyType<'_, T>>;
 
     /// Returns whether or not `property` is enforced by the given operation
-    fn is(&self, property: PropertyType<T>) -> bool {
+    fn is(&self, property: PropertyType<'_, T>) -> bool {
         self.properties().contains(&property)
     }
 
@@ -279,7 +279,7 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for AbelianOperation<'a, T> {
         self.op
     }
 
-    fn properties(&self) -> Vec<PropertyType<T>> {
+    fn properties(&self) -> Vec<PropertyType<'_, T>> {
         vec![PropertyType::Commutative, PropertyType::Abelian]
     }
 
@@ -339,7 +339,7 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for AssociativeOperation<'a, T>
         self.op
     }
 
-    fn properties(&self) -> Vec<PropertyType<T>> {
+    fn properties(&self) -> Vec<PropertyType<'_, T>> {
         vec![PropertyType::Associative]
     }
 
@@ -384,7 +384,7 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for CancellativeOperation<'a, T
         self.op
     }
 
-    fn properties(&self) -> Vec<PropertyType<T>> {
+    fn properties(&self) -> Vec<PropertyType<'_, T>> {
         vec![PropertyType::Cancellative]
     }
 
@@ -440,7 +440,7 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for IdentityOperation<'a, T> {
         self.op
     }
 
-    fn properties(&self) -> Vec<PropertyType<T>> {
+    fn properties(&self) -> Vec<PropertyType<'_, T>> {
         vec![PropertyType::WithIdentity(self.identity)]
     }
 
@@ -492,7 +492,7 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for MonoidOperation<'a, T> {
         self.op
     }
 
-    fn properties(&self) -> Vec<PropertyType<T>> {
+    fn properties(&self) -> Vec<PropertyType<'_, T>> {
         vec![
             PropertyType::Associative,
             PropertyType::WithIdentity(self.identity),
@@ -547,7 +547,7 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for LoopOperation<'a, T> {
         self.op
     }
 
-    fn properties(&self) -> Vec<PropertyType<T>> {
+    fn properties(&self) -> Vec<PropertyType<'_, T>> {
         vec![
             PropertyType::Cancellative,
             PropertyType::WithIdentity(self.identity),
@@ -604,7 +604,7 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for InvertibleOperation<'a, T> 
         self.op
     }
 
-    fn properties(&self) -> Vec<PropertyType<T>> {
+    fn properties(&self) -> Vec<PropertyType<'_, T>> {
         vec![
             PropertyType::WithIdentity(self.identity),
             PropertyType::Invertible(self.identity, self.inv)

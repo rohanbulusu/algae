@@ -51,16 +51,16 @@ impl std::fmt::Display for PropertyError {
     }
 }
 
-pub enum PropertyType<T> {
+pub enum PropertyType<'a, T> {
     Commutative,
     Abelian,
     Associative,
     Cancellative,
     WithIdentity(T),
-    Invertible(T, Box<dyn Fn(T, T) -> T>)
+    Invertible(T, &'a dyn Fn(T, T) -> T)
 }
 
-impl<T: Copy + PartialEq> PropertyType<T> {
+impl<'a, T: Copy + PartialEq> PropertyType<'a, T> {
     pub fn holds_over(&self, op: &dyn Fn(T, T) -> T, domain_sample: &Vec<T>) -> bool {
         match self {
             Self::Commutative | Self::Abelian => Self::commutativity_holds_over(op, domain_sample),
@@ -133,8 +133,8 @@ impl<T: Copy + PartialEq> PropertyType<T> {
     }
 }
 
-impl<T> PartialEq for PropertyType<T> {
-    fn eq(&self, other: &PropertyType<T>) -> bool {
+impl<'a, T> PartialEq for PropertyType<'a, T> {
+    fn eq(&self, other: &PropertyType<'a, T>) -> bool {
         match self {
             Self::Commutative | Self::Abelian => {
                 match other {

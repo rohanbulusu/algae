@@ -563,7 +563,7 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for LoopOperation<'a, T> {
     }
 }
 
-// A function wrapper enforcing identity existence and invertibility.
+/// A function wrapper enforcing identity existence and invertibility.
 ///
 /// # Examples
 ///

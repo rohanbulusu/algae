@@ -620,6 +620,111 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for InvertibleOperation<'a, T> 
     }
 }
 
+/// A function wrapper enforcing identity existence, invertibility, and associativity.
+///
+/// # Examples
+///
+/// ```
+/// use algae_rs::mapping::{GroupOperation, BinaryOperation};
+///
+/// let mut add = GroupOperation::new(&|a, b| a + b, &|a, b| a - b, 0);
+///
+/// let seven = add.with(4, 3);
+/// assert!(seven.is_ok());
+/// assert!(seven.unwrap() == 7);
+///
+/// let mut bad_add = GroupOperation::new(&|a, b| a + b, &|a, b| a * b, 0);
+///
+/// let sum = bad_add.with(4, 2);
+/// assert!(sum.is_err());
+/// ```
+pub struct GroupOperation<'a, T> {
+    op: &'a dyn Fn(T, T) -> T,
+    inv: &'a dyn Fn(T, T) -> T,
+    identity: T,
+    history: Vec<T>,
+}
+
+impl<'a, T> GroupOperation<'a, T> {
+    pub fn new(op: &'a dyn Fn(T, T) -> T, inv: &'a dyn Fn(T, T) -> T, identity: T) -> Self {
+        Self {
+            op,
+            inv,
+            identity,
+            history: vec![],
+        }
+    }
+}
+
+impl<'a, T: Copy + PartialEq> BinaryOperation<T> for GroupOperation<'a, T> {
+    fn operation(&self) -> &dyn Fn(T, T) -> T {
+        self.op
+    }
+
+    fn properties(&self) -> Vec<PropertyType<'_, T>> {
+        vec![
+            PropertyType::Associative,
+            PropertyType::WithIdentity(self.identity),
+            PropertyType::Invertible(self.identity, self.inv)
+        ]
+    }
+
+    fn input_history(&self) -> &Vec<T> {
+        &self.history
+    }
+
+    fn cache(&mut self, input: T) {
+        self.history.push(input);
+    }
+}
+
+/// Returns whether or not the given [`BinaryOperation`] has the [`PropertyType::Invertible`] property.
+///
+/// # Examples
+/// 
+/// ```
+/// # use algae_rs::mapping::{BinaryOperation};
+/// use algae_rs::mapping::{InvertibleOperation, AssociativeOperation, binop_is_invertible};
+///
+/// let add = InvertibleOperation::new(&|a: i32, b: i32| a + b, &|a: i32, b: i32| a - b, 0);
+/// assert!(binop_is_invertible(&add));
+/// 
+/// let bad_add = AssociativeOperation::new(&|a: i32, b: i32| a * b);
+/// assert!(!binop_is_invertible(&bad_add));
+/// ```
+pub fn binop_is_invertible<'a, T: Copy + PartialEq>(binop: &'a dyn BinaryOperation<T>) -> bool {
+    for property in binop.properties() {
+        if let PropertyType::Invertible(_, _) = property {
+            return true;
+        }
+    }
+    return false;
+}
+
+/// Returns whether or not the given invertible [`BinaryOperation`] has the given `identity`.
+///
+/// # Examples
+/// 
+/// ```
+/// # use algae_rs::mapping::{BinaryOperation};
+/// use algae_rs::mapping::{InvertibleOperation, AssociativeOperation, binop_has_invertible_identity};
+///
+/// let add = InvertibleOperation::new(&|a: i32, b: i32| a + b, &|a: i32, b: i32| a - b, 0);
+/// assert!(binop_has_invertible_identity(&add, 0));
+/// 
+/// let bad_add = InvertibleOperation::new(&|a: i32, b: i32| a + b, &|a: i32, b: i32| a - b, 123);
+/// assert!(!binop_has_invertible_identity(&bad_add, 0));
+/// ```
+pub fn binop_has_invertible_identity<'a, T: Copy + PartialEq>(binop: &'a dyn BinaryOperation<T>, identity: T) -> bool {
+    assert!(binop_is_invertible(binop));
+    for property in binop.properties() {
+        if let PropertyType::Invertible(binop_identity, _) = property {
+            return binop_identity == identity;
+        }
+    }
+    return false;
+}
+
 #[cfg(test)]
 mod tests {
 

@@ -1,5 +1,6 @@
 use crate::algaeset::AlgaeSet;
 use crate::mapping::{BinaryOperation, PropertyError, PropertyType};
+use crate::mapping::{binop_is_invertible, binop_has_invertible_identity};
 
 pub trait Magmoid<T: Copy + PartialEq> {
     fn binop(&mut self) -> &mut dyn BinaryOperation<T>;
@@ -361,6 +362,85 @@ impl<'a, T: Copy + PartialEq> Into<UnitalMagma<'a, T>> for Loop<'a, T> {
 }
 
 impl<'a, T: Copy + PartialEq> Into<Quasigroup<'a, T>> for Loop<'a, T> {
+    fn into(self) -> Quasigroup<'a, T> {
+        Quasigroup::new(self.aset, self.binop)
+    }
+}
+
+/// A monoid with inverses.
+///
+/// [`Group`] is a representation of the abstract algebraic group. 
+/// Associativity, invertibility, and identity preservation are all required 
+/// of its binary operation. Its construction involves a set (specifically an 
+/// [`AlgaeSet`]) and a [`BinaryOperation`] with the aforementioned properties.
+///
+/// # Examples
+///
+/// ```
+/// use algae_rs::algaeset::AlgaeSet;
+/// use algae_rs::mapping::{BinaryOperation, GroupOperation};
+/// use algae_rs::magma::{Magmoid, Group};
+///
+/// let mut add = GroupOperation::new(&|a, b| a + b, &|a, b| a - b, 0);
+/// let mut group = Group::new(AlgaeSet::<i32>::all(), &mut add, 0);
+/// 
+/// let sum = group.with(1, 2);
+/// assert!(sum.is_ok());
+/// assert!(sum.unwrap() == 3);
+/// 
+/// let difference = group.with(1, -1);
+/// assert!(difference.is_ok());
+/// assert!(difference.unwrap() == 0);
+///
+/// let mut bad_add = GroupOperation::new(&|a, b| a + b, &|a, b| a * b, 0);
+/// let mut bad_group = Group::new(AlgaeSet::<i32>::all(), &mut bad_add, 0);
+/// 
+/// let bad_sum = bad_group.with(3, 2);
+/// assert!(bad_sum.is_err());
+/// 
+/// let bad_difference = bad_group.with(1, -1);
+/// assert!(bad_difference.is_err());
+/// ```
+pub struct Group<'a, T> {
+    aset: AlgaeSet<T>,
+    binop: &'a mut dyn BinaryOperation<T>,
+    identity: T,
+}
+
+impl<'a, T: Copy + PartialEq> Group<'a, T> {
+    pub fn new(aset: AlgaeSet<T>, binop: &'a mut dyn BinaryOperation<T>, identity: T) -> Self {
+        assert!(binop.is(PropertyType::Associative));
+        assert!(binop.is(PropertyType::WithIdentity(identity)));
+        assert!(binop_is_invertible(binop));
+        assert!(binop_has_invertible_identity(binop, identity));
+        Self {
+            aset,
+            binop,
+            identity,
+        }
+    }
+}
+
+
+impl<'a, T: Copy + PartialEq> Magmoid<T> for Group<'a, T> {
+    fn binop(&mut self) -> &mut dyn BinaryOperation<T> {
+        self.binop
+    }
+}
+
+impl<'a, T> From<Group<'a, T>> for Magma<'a, T> {
+    fn from(group: Group<'a, T>) -> Magma<'a, T> {
+        Magma::new(group.aset, group.binop)
+    }
+}
+
+impl<'a, T: Copy + PartialEq> Into<UnitalMagma<'a, T>> for Group<'a, T> {
+    fn into(self) -> UnitalMagma<'a, T> {
+        UnitalMagma::new(self.aset, self.binop, self.identity)
+    }
+}
+
+impl<'a, T: Copy + PartialEq> Into<Quasigroup<'a, T>> for Group<'a, T> {
     fn into(self) -> Quasigroup<'a, T> {
         Quasigroup::new(self.aset, self.binop)
     }

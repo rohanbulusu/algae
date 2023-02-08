@@ -699,8 +699,8 @@ pub fn binop_is_invertible<'a, T: Copy + PartialEq>(binop: &'a dyn BinaryOperati
 /// let bad_add = InvertibleOperation::new(&|a: i32, b: i32| a + b, &|a: i32, b: i32| a - b, 123);
 /// assert!(!binop_has_invertible_identity(&bad_add, 0));
 /// ```
-pub fn binop_has_invertible_identity<'a, T: Copy + PartialEq>(
-    binop: &'a dyn BinaryOperation<T>,
+pub fn binop_has_invertible_identity<T: Copy + PartialEq>(
+    binop: &dyn BinaryOperation<T>,
     identity: T,
 ) -> bool {
     assert!(binop_is_invertible(binop));

@@ -682,7 +682,7 @@ pub fn binop_is_invertible<T: Copy + PartialEq>(binop: &dyn BinaryOperation<T>) 
             return true;
         }
     }
-    return false;
+    false
 }
 
 /// Returns whether or not the given invertible [`BinaryOperation`] has the given `identity`.
@@ -709,7 +709,7 @@ pub fn binop_has_invertible_identity<T: Copy + PartialEq>(
             return binop_identity == identity;
         }
     }
-    return false;
+    false
 }
 
 #[cfg(test)]

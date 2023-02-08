@@ -1,8 +1,10 @@
 [package]
 name = "algae-rs"
 version = "0.1.252"
+authors = ["Rohan Bulusu"]
 edition = "2021"
 description = "A collection of abstract algebraic structures implemented in Rust"
+repository = "https://github.com/rohanbulusu/algae"
 license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

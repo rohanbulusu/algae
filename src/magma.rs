@@ -1,6 +1,6 @@
 use crate::algaeset::AlgaeSet;
+use crate::mapping::{binop_has_invertible_identity, binop_is_invertible};
 use crate::mapping::{BinaryOperation, PropertyError, PropertyType};
-use crate::mapping::{binop_is_invertible, binop_has_invertible_identity};
 
 pub trait Magmoid<T: Copy + PartialEq> {
     fn binop(&mut self) -> &mut dyn BinaryOperation<T>;
@@ -300,12 +300,11 @@ impl<'a, T: Copy + PartialEq> Into<UnitalMagma<'a, T>> for Monoid<'a, T> {
     }
 }
 
-
 /// A quasigroup with identity
 ///
-/// [`Loop`] is a representation of the abstract algebraic loop. Cancellativity 
-/// (ie. the Latin Square property) and identity preservation are both required 
-/// of its binary operation. Its construction involves a set (specifically an 
+/// [`Loop`] is a representation of the abstract algebraic loop. Cancellativity
+/// (ie. the Latin Square property) and identity preservation are both required
+/// of its binary operation. Its construction involves a set (specifically an
 /// [`AlgaeSet`]) and a [`BinaryOperation`] with the aforementioned properties.
 ///
 /// # Examples
@@ -369,9 +368,9 @@ impl<'a, T: Copy + PartialEq> Into<Quasigroup<'a, T>> for Loop<'a, T> {
 
 /// A monoid with inverses.
 ///
-/// [`Group`] is a representation of the abstract algebraic group. 
-/// Associativity, invertibility, and identity preservation are all required 
-/// of its binary operation. Its construction involves a set (specifically an 
+/// [`Group`] is a representation of the abstract algebraic group.
+/// Associativity, invertibility, and identity preservation are all required
+/// of its binary operation. Its construction involves a set (specifically an
 /// [`AlgaeSet`]) and a [`BinaryOperation`] with the aforementioned properties.
 ///
 /// # Examples
@@ -383,21 +382,21 @@ impl<'a, T: Copy + PartialEq> Into<Quasigroup<'a, T>> for Loop<'a, T> {
 ///
 /// let mut add = GroupOperation::new(&|a, b| a + b, &|a, b| a - b, 0);
 /// let mut group = Group::new(AlgaeSet::<i32>::all(), &mut add, 0);
-/// 
+///
 /// let sum = group.with(1, 2);
 /// assert!(sum.is_ok());
 /// assert!(sum.unwrap() == 3);
-/// 
+///
 /// let difference = group.with(1, -1);
 /// assert!(difference.is_ok());
 /// assert!(difference.unwrap() == 0);
 ///
 /// let mut bad_add = GroupOperation::new(&|a, b| a + b, &|a, b| a * b, 0);
 /// let mut bad_group = Group::new(AlgaeSet::<i32>::all(), &mut bad_add, 0);
-/// 
+///
 /// let bad_sum = bad_group.with(3, 2);
 /// assert!(bad_sum.is_err());
-/// 
+///
 /// let bad_difference = bad_group.with(1, -1);
 /// assert!(bad_difference.is_err());
 /// ```
@@ -420,7 +419,6 @@ impl<'a, T: Copy + PartialEq> Group<'a, T> {
         }
     }
 }
-
 
 impl<'a, T: Copy + PartialEq> Magmoid<T> for Group<'a, T> {
     fn binop(&mut self) -> &mut dyn BinaryOperation<T> {

@@ -170,9 +170,9 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Groupoid<'a, T> {
     }
 }
 
-impl<'a, T> Into<Magma<'a, T>> for Groupoid<'a, T> {
-    fn into(self) -> Magma<'a, T> {
-        Magma::new(self.aset, self.binop)
+impl<'a, T> From<Groupoid<'a, T>> for Magma<'a, T> {
+    fn from(groupoid: Groupoid<'a, T>) -> Magma<'a, T> {
+        Magma::new(groupoid.aset, groupoid.binop)
     }
 }
 

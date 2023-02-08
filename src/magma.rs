@@ -217,9 +217,9 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Quasigroup<'a, T> {
     }
 }
 
-impl<'a, T> Into<Magma<'a, T>> for Quasigroup<'a, T> {
-    fn into(self) -> Magma<'a, T> {
-        Magma::new(self.aset, self.binop)
+impl<'a, T> From<Quasigroup<'a, T>> for Magma<'a, T> {
+    fn from(quasi: Quasigroup<'a, T>) -> Magma<'a, T> {
+        Magma::new(quasi.aset, quasi.binop)
     }
 }
 

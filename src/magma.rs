@@ -110,9 +110,9 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for UnitalMagma<'a, T> {
     }
 }
 
-impl<'a, T> Into<Magma<'a, T>> for UnitalMagma<'a, T> {
-    fn into(self) -> Magma<'a, T> {
-        Magma::new(self.aset, self.binop)
+impl<'a, T> From<UnitalMagma<'a, T>> for Magma<'a, T> {
+    fn from(magma: UnitalMagma<'a, T>) -> Magma<'a, T> {
+        Magma::new(magma.aset, magma.binop)
     }
 }
 

@@ -432,14 +432,14 @@ impl<'a, T> From<Group<'a, T>> for Magma<'a, T> {
     }
 }
 
-impl<'a, T: Copy + PartialEq> Into<UnitalMagma<'a, T>> for Group<'a, T> {
-    fn into(self) -> UnitalMagma<'a, T> {
-        UnitalMagma::new(self.aset, self.binop, self.identity)
+impl<'a, T: Copy + PartialEq> From<Group<'a, T>> for UnitalMagma<'a, T> {
+    fn from(group: Group<'a, T>) -> UnitalMagma<'a, T> {
+        UnitalMagma::new(group.aset, group.binop, group.identity)
     }
 }
 
-impl<'a, T: Copy + PartialEq> Into<Quasigroup<'a, T>> for Group<'a, T> {
-    fn into(self) -> Quasigroup<'a, T> {
-        Quasigroup::new(self.aset, self.binop)
+impl<'a, T: Copy + PartialEq> From<Group<'a, T>> for Quasigroup<'a, T> {
+    fn from(group: Group<'a, T>) -> Quasigroup<'a, T> {
+        Quasigroup::new(group.aset, group.binop)
     }
 }

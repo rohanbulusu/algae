@@ -47,7 +47,7 @@ impl std::fmt::Display for PropertyError {
             PropertyError::InvertibilityError => "Operation is not invertible!",
             PropertyError::Other(error) => error,
         };
-        write!(f, "{}", msg)
+        write!(f, "{msg}")
     }
 }
 

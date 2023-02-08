@@ -282,21 +282,21 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Monoid<'a, T> {
     }
 }
 
-impl<'a, T> Into<Magma<'a, T>> for Monoid<'a, T> {
-    fn into(self) -> Magma<'a, T> {
-        Magma::new(self.aset, self.binop)
+impl<'a, T: Copy + PartialEq> From<Monoid<'a, T>> for Magma<'a, T> {
+    fn from(monoid: Monoid<'a, T>) -> Magma<'a, T> {
+        Magma::new(monoid.aset, monoid.binop)
     }
 }
 
-impl<'a, T: Copy + PartialEq> Into<Groupoid<'a, T>> for Monoid<'a, T> {
-    fn into(self) -> Groupoid<'a, T> {
-        Groupoid::new(self.aset, self.binop)
+impl<'a, T: Copy + PartialEq> From<Monoid<'a, T>> for Groupoid<'a, T> {
+    fn from(monoid: Monoid<'a, T>) -> Groupoid<'a, T> {
+        Groupoid::new(monoid.aset, monoid.binop)
     }
 }
 
-impl<'a, T: Copy + PartialEq> Into<UnitalMagma<'a, T>> for Monoid<'a, T> {
-    fn into(self) -> UnitalMagma<'a, T> {
-        UnitalMagma::new(self.aset, self.binop, self.identity)
+impl<'a, T: Copy + PartialEq> From<Monoid<'a, T>> for UnitalMagma<'a, T> {
+    fn from(monoid: Monoid<'a, T>) -> UnitalMagma<'a ,T> {
+        UnitalMagma::new(monoid.aset, monoid.binop, monoid.identity)
     }
 }
 

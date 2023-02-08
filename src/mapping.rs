@@ -676,7 +676,7 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for GroupOperation<'a, T> {
 /// let bad_add = AssociativeOperation::new(&|a: i32, b: i32| a * b);
 /// assert!(!binop_is_invertible(&bad_add));
 /// ```
-pub fn binop_is_invertible<'a, T: Copy + PartialEq>(binop: &'a dyn BinaryOperation<T>) -> bool {
+pub fn binop_is_invertible<T: Copy + PartialEq>(binop: &dyn BinaryOperation<T>) -> bool {
     for property in binop.properties() {
         if let PropertyType::Invertible(_, _) = property {
             return true;

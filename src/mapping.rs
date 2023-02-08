@@ -57,7 +57,7 @@ pub enum PropertyType<'a, T> {
     Associative,
     Cancellative,
     WithIdentity(T),
-    Invertible(T, &'a dyn Fn(T, T) -> T)
+    Invertible(T, &'a dyn Fn(T, T) -> T),
 }
 
 impl<'a, T: Copy + PartialEq> PropertyType<'a, T> {
@@ -67,7 +67,9 @@ impl<'a, T: Copy + PartialEq> PropertyType<'a, T> {
             Self::Associative => Self::associativity_holds_over(op, domain_sample),
             Self::Cancellative => Self::cancellative_holds_over(op, domain_sample),
             Self::WithIdentity(identity) => Self::identity_holds_over(op, domain_sample, *identity),
-            Self::Invertible(identity, inv) => Self::invertibility_holds_over(op, inv, domain_sample, *identity)
+            Self::Invertible(identity, inv) => {
+                Self::invertibility_holds_over(op, inv, domain_sample, *identity)
+            }
         }
     }
 
@@ -120,7 +122,12 @@ impl<'a, T: Copy + PartialEq> PropertyType<'a, T> {
         left_cancellative && right_cancellative
     }
 
-    fn invertibility_holds_over(op: &dyn Fn(T, T) -> T, inv: &dyn Fn(T, T) -> T, domain_sample: &Vec<T>, identity: T) -> bool {
+    fn invertibility_holds_over(
+        op: &dyn Fn(T, T) -> T,
+        inv: &dyn Fn(T, T) -> T,
+        domain_sample: &Vec<T>,
+        identity: T,
+    ) -> bool {
         if domain_sample.len() < 2 {
             return true;
         }
@@ -129,7 +136,7 @@ impl<'a, T: Copy + PartialEq> PropertyType<'a, T> {
             let left_composition_works = (inv)((op)(pair[0], pair[1]), pair[1]) == pair[0];
             let right_composition_works = (inv)((op)(pair[1], pair[0]), pair[1]) == pair[0];
             inverse_works && left_composition_works && right_composition_works
-        })
+        });
     }
 }
 
@@ -137,35 +144,12 @@ impl<'a, T> PartialEq for PropertyType<'a, T> {
     fn eq(&self, other: &PropertyType<'a, T>) -> bool {
         match self {
             Self::Commutative | Self::Abelian => {
-                match other {
-                    Self::Commutative | Self::Abelian => true,
-                    _ => false
-                }
-            },
-            Self::Associative => {
-                match other {
-                    Self::Associative => true,
-                    _ => false
-                }
-            },
-            Self::Cancellative => {
-                match other {
-                    Self::Cancellative => true,
-                    _ => false
-                }
-            },
-            Self::WithIdentity(_) => {
-                match other {
-                    Self::WithIdentity(_) => true,
-                    _ => false
-                }
-            },
-            Self::Invertible(_, _) => {
-                match other {
-                    Self::Invertible(_, _) => true,
-                    _ => false
-                }
+                matches!(other, Self::Commutative) | matches!(other, Self::Abelian)
             }
+            Self::Associative => matches!(other, Self::Associative),
+            Self::Cancellative => matches!(other, Self::Cancellative),
+            Self::WithIdentity(_) => matches!(other, Self::WithIdentity(_)),
+            Self::Invertible(_, _) => matches!(other, Self::Invertible(_, _)),
         }
     }
 }
@@ -225,7 +209,7 @@ pub trait BinaryOperation<T: Copy + PartialEq> {
                 }
                 PropertyType::WithIdentity(_) => {
                     return Err(PropertyError::IdentityError);
-                },
+                }
                 PropertyType::Invertible(_, _) => {
                     return Err(PropertyError::InvertibilityError);
                 }
@@ -607,7 +591,7 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for InvertibleOperation<'a, T> 
     fn properties(&self) -> Vec<PropertyType<'_, T>> {
         vec![
             PropertyType::WithIdentity(self.identity),
-            PropertyType::Invertible(self.identity, self.inv)
+            PropertyType::Invertible(self.identity, self.inv),
         ]
     }
 
@@ -665,7 +649,7 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for GroupOperation<'a, T> {
         vec![
             PropertyType::Associative,
             PropertyType::WithIdentity(self.identity),
-            PropertyType::Invertible(self.identity, self.inv)
+            PropertyType::Invertible(self.identity, self.inv),
         ]
     }
 
@@ -681,14 +665,14 @@ impl<'a, T: Copy + PartialEq> BinaryOperation<T> for GroupOperation<'a, T> {
 /// Returns whether or not the given [`BinaryOperation`] has the [`PropertyType::Invertible`] property.
 ///
 /// # Examples
-/// 
+///
 /// ```
 /// # use algae_rs::mapping::{BinaryOperation};
 /// use algae_rs::mapping::{InvertibleOperation, AssociativeOperation, binop_is_invertible};
 ///
 /// let add = InvertibleOperation::new(&|a: i32, b: i32| a + b, &|a: i32, b: i32| a - b, 0);
 /// assert!(binop_is_invertible(&add));
-/// 
+///
 /// let bad_add = AssociativeOperation::new(&|a: i32, b: i32| a * b);
 /// assert!(!binop_is_invertible(&bad_add));
 /// ```
@@ -704,18 +688,21 @@ pub fn binop_is_invertible<'a, T: Copy + PartialEq>(binop: &'a dyn BinaryOperati
 /// Returns whether or not the given invertible [`BinaryOperation`] has the given `identity`.
 ///
 /// # Examples
-/// 
+///
 /// ```
 /// # use algae_rs::mapping::{BinaryOperation};
 /// use algae_rs::mapping::{InvertibleOperation, AssociativeOperation, binop_has_invertible_identity};
 ///
 /// let add = InvertibleOperation::new(&|a: i32, b: i32| a + b, &|a: i32, b: i32| a - b, 0);
 /// assert!(binop_has_invertible_identity(&add, 0));
-/// 
+///
 /// let bad_add = InvertibleOperation::new(&|a: i32, b: i32| a + b, &|a: i32, b: i32| a - b, 123);
 /// assert!(!binop_has_invertible_identity(&bad_add, 0));
 /// ```
-pub fn binop_has_invertible_identity<'a, T: Copy + PartialEq>(binop: &'a dyn BinaryOperation<T>, identity: T) -> bool {
+pub fn binop_has_invertible_identity<'a, T: Copy + PartialEq>(
+    binop: &'a dyn BinaryOperation<T>,
+    identity: T,
+) -> bool {
     assert!(binop_is_invertible(binop));
     for property in binop.properties() {
         if let PropertyType::Invertible(binop_identity, _) = property {

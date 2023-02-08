@@ -348,21 +348,21 @@ impl<'a, T: Copy + PartialEq> Magmoid<T> for Loop<'a, T> {
     }
 }
 
-impl<'a, T> Into<Magma<'a, T>> for Loop<'a, T> {
-    fn into(self) -> Magma<'a, T> {
-        Magma::new(self.aset, self.binop)
+impl<'a, T: Copy + PartialEq> From<Loop<'a, T>> for Magma<'a, T> {
+    fn from(loop_: Loop<'a, T>) -> Magma<'a, T> {
+        Magma::new(loop_.aset, loop_.binop)
     }
 }
 
-impl<'a, T: Copy + PartialEq> Into<UnitalMagma<'a, T>> for Loop<'a, T> {
-    fn into(self) -> UnitalMagma<'a, T> {
-        UnitalMagma::new(self.aset, self.binop, self.identity)
+impl<'a, T: Copy + PartialEq> From<Loop<'a, T>> for UnitalMagma<'a, T> {
+    fn from(loop_: Loop<'a, T>) -> UnitalMagma<'a, T> {
+        UnitalMagma::new(loop_.aset, loop_.binop, loop_.identity)
     }
 }
 
-impl<'a, T: Copy + PartialEq> Into<Quasigroup<'a, T>> for Loop<'a, T> {
-    fn into(self) -> Quasigroup<'a, T> {
-        Quasigroup::new(self.aset, self.binop)
+impl<'a, T: Copy + PartialEq> From<Loop<'a, T>> for Quasigroup<'a, T> {
+    fn from(loop_: Loop<'a, T>) -> Quasigroup<'a, T> {
+        Quasigroup::new(loop_.aset, loop_.binop)
     }
 }
 

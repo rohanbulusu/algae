@@ -7,4 +7,5 @@
 
 pub mod algaeset;
 pub mod magma;
+pub mod group;
 pub mod mapping;

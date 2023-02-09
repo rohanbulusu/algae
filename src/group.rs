@@ -81,3 +81,49 @@ impl<'a, T: Copy + PartialEq> From<Group<'a, T>> for Quasigroup<'a, T> {
         Quasigroup::new(group.aset, group.binop)
     }
 }
+
+/// A commutative group
+pub struct AbelianGroup<'a, T> {
+    aset: AlgaeSet<T>,
+    binop: &'a mut dyn BinaryOperation<T>,
+    identity: T
+}
+
+impl<'a, T: Copy + PartialEq> AbelianGroup<'a, T> {
+    pub fn new(aset: AlgaeSet<T>, binop: &'a mut dyn BinaryOperation<T>, identity: T) -> Self {
+        assert!(binop.is(PropertyType::Associative));
+        assert!(binop.is(PropertyType::Commutative));
+        assert!(binop.is(PropertyType::WithIdentity(identity)));
+        assert!(binop_is_invertible(binop));
+        assert!(binop_has_invertible_identity(binop, identity));
+        Self {
+            aset,
+            binop,
+            identity,
+        }
+    }
+}
+
+impl<'a, T: Copy + PartialEq> Magmoid<T> for AbelianGroup<'a, T> {
+    fn binop(&mut self) -> &mut dyn BinaryOperation<T> {
+        self.binop
+    }
+}
+
+impl<'a, T> From<AbelianGroup<'a, T>> for Magma<'a, T> {
+    fn from(group: AbelianGroup<'a, T>) -> Magma<'a, T> {
+        Magma::new(group.aset, group.binop)
+    }
+}
+
+impl<'a, T: Copy + PartialEq> From<AbelianGroup<'a, T>> for UnitalMagma<'a, T> {
+    fn from(group: AbelianGroup<'a, T>) -> UnitalMagma<'a, T> {
+        UnitalMagma::new(group.aset, group.binop, group.identity)
+    }
+}
+
+impl<'a, T: Copy + PartialEq> From<AbelianGroup<'a, T>> for Quasigroup<'a, T> {
+    fn from(group: AbelianGroup<'a, T>) -> Quasigroup<'a, T> {
+        Quasigroup::new(group.aset, group.binop)
+    }
+}
